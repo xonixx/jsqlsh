@@ -1,7 +1,12 @@
 package info.xonix.sqlsh;
 
+import com.google.common.base.Predicate;
 import org.apache.commons.lang.StringUtils;
+import org.reflections.ReflectionUtils;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -10,15 +15,6 @@ import java.util.*;
  * Time: 10:19 PM
  */
 public class Engine implements IEngine {
-    private static interface IPrm {
-        CommandParam getParam();
-
-        Class getParamType();
-
-        boolean isValid(String value);
-
-        void set(String value);
-    }
 
     private static class KeyVal {
         final String key;
@@ -79,17 +75,26 @@ public class Engine implements IEngine {
         Cmd cmd = Core.resolveCommand(cmdName);
 
         if (cmd == null) {
-            throw new CommandParseException("command " + cmdName + " doesn't exit");
+            throw new CommandParseException("command " + cmdName + " doesn't exist");
         }
 
         Class cls = cmd.klass;
-        List<IPrm> prms = listPrms(cls);
+        ICommand commandObj;
+        try {
+            commandObj = (ICommand)cls.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new CommandParseException("Can't instantiate class: " + cls);
+        }
+        List<IPrm> prms = listPrms(cls, commandObj);
         Args cmdArgs = processArgs(args.subList(1, args.size()));
 
-        return bind(prms, cmdArgs);
+        bind(prms, cmdArgs);
+        commandObj.setValue(cmdArgs.getValue());
+
+        return commandObj;
     }
 
-    private ICommand bind(List<IPrm> prms, Args cmdArgs) throws CommandParseException {
+    private void bind(List<IPrm> prms, Args cmdArgs) throws CommandParseException {
         Map<String, String> params = new HashMap<>();
         Set<String> knownParams = new HashSet<>();
 
@@ -127,9 +132,7 @@ public class Engine implements IEngine {
             }
         }
 
-        if (errors.isEmpty())
-            return null;
-        else {
+        if (!errors.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (String error : errors) {
                 sb.append(error);
@@ -138,7 +141,6 @@ public class Engine implements IEngine {
             sb.setLength(sb.length() - 1);
             throw new CommandParseException(sb.toString());
         }
-
     }
 
     public static Args processArgs(List<String> args) throws CommandParseException {
@@ -194,7 +196,24 @@ public class Engine implements IEngine {
         };
     }
 
-    private List<IPrm> listPrms(Class cls) {
-        return null;
+    private List<IPrm> listPrms(Class cls, ICommand commandObj) {
+        Predicate<AnnotatedElement> hasCommandParamAnn = ReflectionUtils.withAnnotation(CommandParam.class);
+        Set<Field> fields = ReflectionUtils.getAllFields(cls, hasCommandParamAnn);
+        Set<Method> setters = ReflectionUtils.getAllMethods(cls,
+                hasCommandParamAnn,
+                ReflectionUtils.withPrefix("set"),
+                ReflectionUtils.withParametersCount(1));
+
+        List<IPrm> res = new LinkedList<>();
+
+        for (Field field : fields) {
+            res.add(new FieldPrm(field, commandObj));
+        }
+
+        for (Method setter : setters) {
+            res.add(new SetterPrm(setter, commandObj));
+        }
+
+        return res;
     }
 }

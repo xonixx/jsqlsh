@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Time: 3:14 PM
  */
 public class Core {
-    public static final String COMMANDS_FILE = "/jsqlsh/commands.txt";
+    public static final String COMMANDS_FILE = "jsqlsh/commands.txt";
 
     private static List<Cmd> listAllCmds() {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
