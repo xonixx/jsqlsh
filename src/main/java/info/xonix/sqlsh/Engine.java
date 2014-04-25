@@ -1,5 +1,7 @@
 package info.xonix.sqlsh;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.*;
 
 /**
@@ -40,7 +42,7 @@ public class Engine implements IEngine {
                 sb.append('"')
                         .append(keyVal.key)
                         .append("\"=\"")
-                        .append(keyVal.val)
+                        .append(StringUtils.defaultString(keyVal.val))
                         .append("\", ");
             }
             String value = getValue();
@@ -143,7 +145,7 @@ public class Engine implements IEngine {
         LinkedList<KeyVal> keyVals = new LinkedList<>();
         String value = null;
 
-        int lastArgIdx = 0;
+        int lastArgIdx = -1;
         for (int i = args.size() - 1; i >= 0; i--) {
             String arg = args.get(i);
             if (arg.startsWith("-")) {
@@ -162,22 +164,18 @@ public class Engine implements IEngine {
                 KeyVal keyVal = new KeyVal(arg.substring(1), null);
                 keyVals.add(keyVal);
             } else {
-                if (keyVals.isEmpty()) {
-                    value = arg;
-                } else {
-                    if (i < lastArgIdx + 1) {
-                        KeyVal keyVal = keyVals.getLast();
-                        if (keyVal.val == null) {
-                            keyVal.val = arg;
-                        } else {
-                            keyVal.val += " " + arg;
-                        }
+                if (keyVals.isEmpty() || i > lastArgIdx + 1) {
+                    if (value == null) {
+                        value = arg;
                     } else {
-                        if (value == null) {
-                            value = arg;
-                        } else {
-                            value += " " + arg;
-                        }
+                        value += " " + arg;
+                    }
+                } else {
+                    KeyVal keyVal = keyVals.getLast();
+                    if (keyVal.val == null) {
+                        keyVal.val = arg;
+                    } else {
+                        keyVal.val += " " + arg;
                     }
                 }
             }
