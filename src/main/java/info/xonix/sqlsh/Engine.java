@@ -1,12 +1,5 @@
 package info.xonix.sqlsh;
 
-import org.reflections.Reflections;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -15,62 +8,195 @@ import java.util.*;
  * Time: 10:19 PM
  */
 public class Engine implements IEngine {
-    public static final String COMMANDS_FILE = "/jsqlsh/commands.txt";
+    private static interface IPrm {
+        CommandParam getParam();
+
+        Class getParamType();
+
+        boolean isValid(String value);
+
+        void set(String value);
+    }
+
+    private static class KeyVal {
+        final String key;
+        String val;
+
+        private KeyVal(String key, String val) {
+            this.key = key;
+            this.val = val;
+        }
+    }
+
+    public static abstract class Args {
+        abstract List<KeyVal> getArgs();
+
+        abstract String getValue();
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            for (KeyVal keyVal : getArgs()) {
+                sb.append('"')
+                        .append(keyVal.key)
+                        .append("\"=\"")
+                        .append(keyVal.val)
+                        .append("\", ");
+            }
+            String value = getValue();
+            if (value != null) {
+                sb.append("\"value\"=\"")
+                        .append(value)
+                        .append("\", ");
+            }
+            if (sb.length() > 0)
+                sb.setLength(sb.length() - 2);
+            return sb.toString();
+        }
+    }
 
     @Override
     public ICommandParseResult parseCommand(String commandLine) {
-        return null;
+        List<String> args;
+        try {
+            args = Utils.translateCommandline(commandLine);
+            ICommand command = parseArgs(args);
+            return ICommandParseResult.command(command);
+        } catch (CommandParseException e) {
+            return ICommandParseResult.error(e.getMessage());
+        }
     }
 
-    /**
-     * @return list of all available commands sorted by name
-     */
-    public static List<Command> listAllCommands() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-        Enumeration<URL> resources;
-        try {
-            resources = cl.getResources(COMMANDS_FILE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private ICommand parseArgs(List<String> args) throws CommandParseException {
+        if (args == null || args.isEmpty()) {
+            throw new CommandParseException("empty command");
         }
 
-        List<Command> res = new LinkedList<>();
+        String cmdName = args.get(0);
 
-        while (resources.hasMoreElements()) {
-            URL commandsFileUrl = resources.nextElement();
+        Cmd cmd = Core.resolveCommand(cmdName);
 
-            res.addAll(processCommandsFile(commandsFileUrl));
+        if (cmd == null) {
+            throw new CommandParseException("command " + cmdName + " doesn't exit");
         }
 
-        res.sort((a, b) -> a.name().compareTo(b.name()));
+        Class cls = cmd.klass;
+        List<IPrm> prms = listPrms(cls);
+        Args cmdArgs = processArgs(args.subList(1, args.size()));
 
-        return res;
+        return bind(prms, cmdArgs);
     }
 
-    private static Collection<? extends Command> processCommandsFile(URL commandsFileUrl) {
-        List<String> strings;
-        try {
-            strings = Files.readAllLines(Paths.get(commandsFileUrl.toURI()));
-        } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
+    private ICommand bind(List<IPrm> prms, Args cmdArgs) throws CommandParseException {
+        Map<String, String> params = new HashMap<>();
+        Set<String> knownParams = new HashSet<>();
+
+        for (IPrm prm : prms) {
+            knownParams.add(prm.getParam().name());
         }
 
-        LinkedList<Command> res = new LinkedList<>();
+        for (KeyVal keyVal : cmdArgs.getArgs()) {
+            params.put(keyVal.key, keyVal.val);
+        }
 
-        for (String string : strings) {
-            if (!string.startsWith("#")) {
-                string = string.trim();
+        List<String> errors = new LinkedList<>();
 
-                Reflections packageRefl = new Reflections(string);
-                Set<Class<?>> commandClasses = packageRefl.getTypesAnnotatedWith(Command.class);
+        for (IPrm prm : prms) {
+            String pName = prm.getParam().name();
 
-                for (Class<?> commandClass : commandClasses) {
-                    res.add(commandClass.getAnnotation(Command.class));
+            if (!prm.getParam().optional() && !params.containsKey(pName)) {
+                errors.add("Param " + pName + " is mandatory");
+            }
+
+            if (params.containsKey(pName)) {
+                String pVal = params.get(pName);
+
+                if (prm.isValid(pVal)) {
+                    prm.set(pVal);
+                } else {
+                    errors.add("Param value '" + pVal + "' is invalid for param '" + pName + "' with type " + prm.getParamType());
                 }
             }
         }
 
-        return res;
+        for (String p : params.keySet()) {
+            if (!knownParams.contains(p)) {
+                errors.add("Param '" + p + "' is unknown");
+            }
+        }
+
+        if (errors.isEmpty())
+            return null;
+        else {
+            StringBuilder sb = new StringBuilder();
+            for (String error : errors) {
+                sb.append(error);
+                sb.append('\n');
+            }
+            sb.setLength(sb.length() - 1);
+            throw new CommandParseException(sb.toString());
+        }
+
+    }
+
+    public static Args processArgs(List<String> args) throws CommandParseException {
+        LinkedList<KeyVal> keyVals = new LinkedList<>();
+        String value = null;
+
+        int lastArgIdx = 0;
+        for (int i = args.size() - 1; i >= 0; i--) {
+            String arg = args.get(i);
+            if (arg.startsWith("-")) {
+                lastArgIdx = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < args.size(); i++) {
+            String arg = args.get(i);
+
+            if (arg.startsWith("-")) {
+                if (value != null) {
+                    throw new CommandParseException("Arg " + arg + " can't follow value");
+                }
+                KeyVal keyVal = new KeyVal(arg.substring(1), null);
+                keyVals.add(keyVal);
+            } else {
+                if (keyVals.isEmpty()) {
+                    value = arg;
+                } else {
+                    if (i < lastArgIdx + 1) {
+                        KeyVal keyVal = keyVals.getLast();
+                        if (keyVal.val == null) {
+                            keyVal.val = arg;
+                        } else {
+                            keyVal.val += " " + arg;
+                        }
+                    } else {
+                        if (value == null) {
+                            value = arg;
+                        } else {
+                            value += " " + arg;
+                        }
+                    }
+                }
+            }
+        }
+        final String finalValue = value;
+        return new Args() {
+            @Override
+            public List<KeyVal> getArgs() {
+                return keyVals;
+            }
+
+            @Override
+            public String getValue() {
+                return finalValue;
+            }
+        };
+    }
+
+    private List<IPrm> listPrms(Class cls) {
+        return null;
     }
 }

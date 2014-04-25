@@ -14,9 +14,17 @@ import java.util.List;
         name = "help",
         description = "lists all commands and provides help for each")
 public class HelpCommand implements ICommand {
+
+    private String arg;
+
     @Override
-    public ICommandResult execute(ISession session, String arg) throws CommandExecutionException {
-        List<Command> commands = Engine.listAllCommands();
+    public void setValue(String value) {
+        arg = value;
+    }
+
+    @Override
+    public ICommandResult execute(ISession session) throws CommandExecutionException {
+        List<Command> commands = Core.listAllCommands();
 
         StringBuilder sb = new StringBuilder();
 
