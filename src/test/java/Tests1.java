@@ -29,6 +29,7 @@ public class Tests1 {
         exec(engine, "help");
         exec(engine, "help add");
         exec(engine, "add -a 5 -b 2");
+        exec(engine, "add -a aaaa -b BBB");
     }
 
     private void exec(Engine engine, String cmd) throws CommandExecutionException {

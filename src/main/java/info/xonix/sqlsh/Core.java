@@ -56,10 +56,10 @@ public class Core {
     /**
      * @return list of all available commands sorted by name
      */
-    public static List<Command> listAllCommands() {
-        List<Command> res = listAllCmds().stream().map(cmd -> cmd.command).collect(Collectors.toList());
+    public static List<Cmd> listAllCommands() {
+        List<Cmd> res = listAllCmds();
 
-        res.sort((a, b) -> a.name().compareTo(b.name()));
+        res.sort((a, b) -> a.command.name().compareTo(b.command.name()));
 
         return res;
     }

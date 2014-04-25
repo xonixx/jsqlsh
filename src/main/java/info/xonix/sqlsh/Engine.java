@@ -196,7 +196,7 @@ public class Engine implements IEngine {
         };
     }
 
-    private List<IPrm> listPrms(Class cls, ICommand commandObj) {
+    public static List<IPrm> listPrms(Class cls, ICommand commandObj) {
         Predicate<AnnotatedElement> hasCommandParamAnn = ReflectionUtils.withAnnotation(CommandParam.class);
         Set<Field> fields = ReflectionUtils.getAllFields(cls, hasCommandParamAnn);
         Set<Method> setters = ReflectionUtils.getAllMethods(cls,

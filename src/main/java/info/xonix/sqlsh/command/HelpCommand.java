@@ -24,15 +24,32 @@ public class HelpCommand implements ICommand {
 
     @Override
     public ICommandResult execute(ISession session) throws CommandExecutionException {
-        List<Command> commands = Core.listAllCommands();
+        List<Cmd> commands = Core.listAllCommands();
 
         StringBuilder sb = new StringBuilder();
 
-        for (Command command : commands) {
-            if (StringUtils.isEmpty(arg) || arg.equals(command.name())) {
+        for (Cmd cmd : commands) {
+            Command command = cmd.command;
+            boolean emptyArg = StringUtils.isEmpty(arg);
+            boolean isArg = !emptyArg && arg.equals(command.name());
+            if (emptyArg || isArg) {
                 sb.append(command.name());
                 sb.append("\n\t");
                 sb.append(command.description());
+                if (isArg) {
+                    List<IPrm> prms = Engine.listPrms(cmd.klass, null);
+                    // TODO: hmmmm this line makes command not found. WHY???
+//                    prms.sort((a,b)->a.getParam().name().compareTo(b.getParam().name()));
+                    sb.append("\n\n\tParameters:");
+                    for (IPrm prm : prms) {
+                        sb.append("\n\t\t")
+                                .append(prm.getParam().name())
+                                .append(" (")
+                                .append(prm.getParamType())
+                                .append(") - ")
+                                .append(prm.getParam().description());
+                    }
+                }
                 sb.append("\n\n");
             }
         }

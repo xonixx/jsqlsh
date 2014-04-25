@@ -5,8 +5,8 @@ package info.xonix.sqlsh;
 * Date: 4/25/14
 * Time: 11:37 PM
 */
-interface IPrm {
-    CommandParam getParam();
+public interface IPrm {
+    public CommandParam getParam();
 
     Class getParamType();
 

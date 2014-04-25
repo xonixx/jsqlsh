@@ -7,8 +7,8 @@ package info.xonix.sqlsh;
  * Time: 3:37 PM
  */
 public class Cmd {
-    final Command command;
-    final Class klass;
+    public final Command command;
+    public final Class klass;
 
     Cmd(Command command, Class klass) {
         this.command = command;
