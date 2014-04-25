@@ -38,8 +38,7 @@ public class HelpCommand implements ICommand {
                 sb.append(command.description());
                 if (isArg) {
                     List<IPrm> prms = Engine.listPrms(cmd.klass, null);
-                    // TODO: hmmmm this line makes command not found. WHY???
-//                    prms.sort((a,b)->a.getParam().name().compareTo(b.getParam().name()));
+                    prms.sort((a,b)->a.getParam().name().compareTo(b.getParam().name()));
                     sb.append("\n\n\tParameters:");
                     for (IPrm prm : prms) {
                         sb.append("\n\t\t")
