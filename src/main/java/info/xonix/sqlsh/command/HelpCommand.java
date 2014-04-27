@@ -24,36 +24,47 @@ public class HelpCommand implements ICommand {
 
     @Override
     public ICommandResult execute(ISession session) throws CommandExecutionException {
-        List<Cmd> commands = Core.listAllCommands();
 
         StringBuilder sb = new StringBuilder();
 
-        for (Cmd cmd : commands) {
+        boolean emptyArg = StringUtils.isEmpty(arg);
+
+        if (emptyArg) {
+            List<Cmd> commands = Core.listAllCommands();
+
+            for (Cmd cmd : commands) {
+                Command command = cmd.command;
+                sb.append(command.name())
+                        .append(" - ")
+                        .append(command.description())
+                        .append('\n');
+            }
+            if (sb.length() > 0)
+                sb.setLength(sb.length() - 2);
+
+        } else {
+            Cmd cmd = Core.resolveCommand(arg);
+            if (cmd == null) {
+                return ICommandResult.text("Command " + arg + " doesn't exist");
+            }
             Command command = cmd.command;
-            boolean emptyArg = StringUtils.isEmpty(arg);
-            boolean isArg = !emptyArg && arg.equals(command.name());
-            if (emptyArg || isArg) {
-                sb.append(command.name());
-                sb.append("\n\t");
-                sb.append(command.description());
-                if (isArg) {
-                    List<IPrm> prms = Engine.listPrms(cmd.klass, null);
-                    prms.sort((a,b)->a.getParam().name().compareTo(b.getParam().name()));
-                    sb.append("\n\n\tParameters:");
-                    for (IPrm prm : prms) {
-                        sb.append("\n\t\t")
-                                .append(prm.getParam().name())
-                                .append(" (")
-                                .append(prm.getParamType())
-                                .append(") - ")
-                                .append(prm.getParam().description());
-                    }
+            sb.append(command.name())
+                    .append("\n\t")
+                    .append(command.description());
+            List<IPrm> prms = Engine.listPrms(cmd.klass, null);
+            if (!prms.isEmpty()) {
+                prms.sort((a, b) -> a.getParam().name().compareTo(b.getParam().name()));
+                sb.append("\n\n\tParameters:");
+                for (IPrm prm : prms) {
+                    sb.append("\n\t\t")
+                            .append(prm.getParam().name())
+                            .append(" (")
+                            .append(prm.getParamType())
+                            .append(") - ")
+                            .append(prm.getParam().description());
                 }
-                sb.append("\n\n");
             }
         }
-        if (sb.length() > 0)
-            sb.setLength(sb.length() - 2);
 
         return ICommandResult.text(sb.toString());
     }
