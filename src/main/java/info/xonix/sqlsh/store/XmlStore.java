@@ -10,7 +10,9 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,6 +33,8 @@ public class XmlStore implements IStore {
             }
         } else {
             document = XmlUtil.getBuilder().newDocument();
+            Element rootElt = document.createElement("store");
+            document.appendChild(rootElt);
         }
     }
 
@@ -63,7 +67,7 @@ public class XmlStore implements IStore {
     }
 
     private Element getOrCreatePath(Element element, String[] pathParts, int partIdx) {
-        if (partIdx + 1 == pathParts.length) {
+        if (partIdx == pathParts.length) {
             return element;
         }
 
@@ -88,12 +92,12 @@ public class XmlStore implements IStore {
         Objects.requireNonNull(key);
         Objects.requireNonNull(value);
 
-        path = fixSlashes(path, false, false);
-        key = fixSlashes(key, false, false);
+        if (key.contains(SLASH)) {
+            throw new IllegalArgumentException("key must not contain '" + SLASH + "'");
+        }
 
-//        if (exists(path, key)) {
-//            delete(path, key);
-//        }
+        path = fixSlashes(path, false, false);
+
 
         Element keyElt = getOrCreatePath(document.getDocumentElement(), path + SLASH + key);
         XmlUtil.removeChilds(keyElt);
@@ -101,7 +105,35 @@ public class XmlStore implements IStore {
     }
 
     private Node valueToElt(Object value) {
-        return null;
+        Element result = null;
+        if (value instanceof String) {
+            String s = (String) value;
+            result = document.createElement("string");
+            result.appendChild(document.createTextNode(s));
+            return result;
+        } else if (value instanceof Integer) {
+            Integer iVal = (Integer) value;
+            result = document.createElement("int");
+            result.appendChild(document.createTextNode(String.valueOf(iVal)));
+            return result;
+        } else if (value instanceof Map) {
+            Map map = (Map) value;
+            result = document.createElement("map");
+            for (Object o : map.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                Element entryElt = document.createElement("entry");
+                result.appendChild(entryElt);
+                entryElt.appendChild(valueToElt(entry.getKey()));
+                entryElt.appendChild(valueToElt(entry.getValue()));
+            }
+        } else if (value instanceof Collection) {
+            Collection coll = (Collection) value;
+            result = document.createElement("list");
+            for (Object o : coll) {
+                result.appendChild(valueToElt(o));
+            }
+        }
+        return result;
     }
 
     @Override
@@ -130,5 +162,12 @@ public class XmlStore implements IStore {
     @Override
     public List<StoreElement> list(String path) {
         return null;
+    }
+
+    /**
+     * for debug
+     */
+    public void pprint() {
+        XmlUtil.pprint(document, System.out);
     }
 }
