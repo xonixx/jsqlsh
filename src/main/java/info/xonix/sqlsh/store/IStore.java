@@ -10,7 +10,7 @@ import java.util.List;
 public interface IStore {
     void put(String path, String key, Object value);
 
-    void delete(String path, String key);
+    boolean delete(String path, String key);
 
     Object get(String path, String key);
 

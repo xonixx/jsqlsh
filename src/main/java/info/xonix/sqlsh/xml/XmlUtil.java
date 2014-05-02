@@ -49,13 +49,14 @@ public class XmlUtil {
 
         try {
             transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+//            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.setOutputProperty(OutputPropertiesFactory.S_KEY_INDENT_AMOUNT, "2");
         } catch (TransformerConfigurationException e) {
             throw new RuntimeException(e);
         }
 
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//        transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
 
         StreamResult result = new StreamResult(outputStream);
         DOMSource source = new DOMSource(node);
