@@ -1,5 +1,7 @@
 package info.xonix.sqlsh;
 
+import com.bethecoder.ascii_table.ASCIITable;
+import com.bethecoder.ascii_table.spec.IASCIITable;
 import info.xonix.sqlsh.command.ExitCommand;
 import info.xonix.sqlsh.store.XmlStore;
 import jline.TerminalFactory;
@@ -8,6 +10,7 @@ import jline.console.ConsoleReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * User: xonix
@@ -44,12 +47,28 @@ public class JSqlsh {
                         if (result.getResultType() == CommandResultType.TEXT) {
                             out.print(result.getTextResult());
                         } else {
-                            out.print("TBD: table result");
+                            ITableResult tableResult = result.getTableResult();
+
+                            List<String> columnNames = tableResult.getColumnNames();
+                            String[] headers = columnNames.toArray(new String[columnNames.size()]);
+
+                            List<List<String>> tableData = tableResult.getData();
+                            String[][] data = new String[tableData.size()][columnNames.size()];
+
+                            for (int i = 0; i < tableData.size(); i++) {
+                                List<String> rows = tableData.get(i);
+                                for (int j = 0; j < rows.size(); j++) {
+                                    String cell = rows.get(j);
+                                    data[i][j] = cell;
+                                }
+                            }
+
+                            out.print(ASCIITable.getInstance().getTable(headers, data, IASCIITable.ALIGN_LEFT));
                         }
                         out.print("\n");
                     }
                 } else {
-                   err = commandParseResult.getErrors();
+                    err = commandParseResult.getErrors();
                 }
 
                 if (err != null) {

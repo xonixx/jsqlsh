@@ -13,4 +13,12 @@ public class CommandExecutionException extends Exception {
     public CommandExecutionException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    @Override
+    public String getMessage() {
+        if (getCause() == null)
+            return super.getMessage();
+        else
+            return super.getMessage() + ": " + getCause().getMessage();
+    }
 }
