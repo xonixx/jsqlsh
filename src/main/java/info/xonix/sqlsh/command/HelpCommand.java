@@ -23,7 +23,7 @@ public class HelpCommand implements ICommand {
     }
 
     @Override
-    public ICommandResult execute(ISession session) throws CommandExecutionException {
+    public ICommandResult execute(IContext context) throws CommandExecutionException {
 
         StringBuilder sb = new StringBuilder();
 

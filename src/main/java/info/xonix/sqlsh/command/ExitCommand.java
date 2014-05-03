@@ -13,7 +13,7 @@ import info.xonix.sqlsh.*;
 )
 public class ExitCommand implements ICommand {
     @Override
-    public ICommandResult execute(ISession session) throws CommandExecutionException {
+    public ICommandResult execute(IContext context) throws CommandExecutionException {
         return null;
     }
 

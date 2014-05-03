@@ -27,7 +27,7 @@ public class AddCmd implements ICommand {
     int b;
 
     @Override
-    public ICommandResult execute(ISession session) throws CommandExecutionException {
+    public ICommandResult execute(IContext context) throws CommandExecutionException {
         return ICommandResult.text(String.valueOf(a+b));
     }
 

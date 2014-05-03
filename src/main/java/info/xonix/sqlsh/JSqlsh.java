@@ -1,9 +1,11 @@
 package info.xonix.sqlsh;
 
 import info.xonix.sqlsh.command.ExitCommand;
+import info.xonix.sqlsh.store.XmlStore;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -12,7 +14,7 @@ import java.io.PrintWriter;
  * Date: 4/27/14
  * Time: 8:56 PM
  */
-public class JSqlSh {
+public class JSqlsh {
     public static void main(String[] args) {
         try {
             ConsoleReader console = new ConsoleReader();
@@ -21,6 +23,7 @@ public class JSqlSh {
             console.setPrompt("> ");
             String line;
             Engine engine = new Engine();
+            Context context = new Context(new XmlStore(new File(".jsqlsh.xml")), new Session());
             while ((line = console.readLine()) != null) {
                 ICommandParseResult commandParseResult = engine.parseCommand(line);
                 String err = null;
@@ -33,7 +36,7 @@ public class JSqlSh {
                         break;
                     }
                     try {
-                        result = command.execute(null);
+                        result = command.execute(context);
                     } catch (CommandExecutionException e) {
                         err = e.getMessage();
                     }

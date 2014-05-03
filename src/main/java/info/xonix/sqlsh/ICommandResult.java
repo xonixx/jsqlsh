@@ -12,6 +12,10 @@ public interface ICommandResult {
 
     abstract ITableResult getTableResult();
 
+    /*public static ICommandResult exception(Throwable throwable) {
+        return text(throwable.getMessage());
+    }*/
+
     public static ICommandResult text(String result) {
         return new ICommandResult() {
             @Override
