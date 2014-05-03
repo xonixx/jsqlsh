@@ -6,6 +6,7 @@ import info.xonix.sqlsh.command.ExitCommand;
 import info.xonix.sqlsh.store.XmlStore;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
+import jline.console.history.FileHistory;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,13 +21,23 @@ import java.util.List;
 public class JSqlsh {
     public static void main(String[] args) {
         try {
+            File settingsFolder = new File(".jsqlsh");
+            if (!settingsFolder.exists()) {
+                if (!settingsFolder.mkdirs()) {
+                    throw new RuntimeException("Unable to create settings folder");
+                }
+            } else if (!settingsFolder.isDirectory()) {
+                throw new RuntimeException("Not a folder: " + settingsFolder.getName());
+            }
             ConsoleReader console = new ConsoleReader();
+            FileHistory jlineHistory = new FileHistory(new File(settingsFolder, ".history"));
+            console.setHistory(jlineHistory);
             PrintWriter out = new PrintWriter(console.getOutput());
             console.print("This is JSQLSH, print help (or help cmd) for information\n\n");
             console.setPrompt("> ");
             String line;
             Engine engine = new Engine();
-            Context context = new Context(new XmlStore(new File(".jsqlsh.xml")), new Session());
+            Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), new Session());
             while ((line = console.readLine()) != null) {
                 ICommandParseResult commandParseResult = engine.parseCommand(line);
                 String err = null;
@@ -36,6 +47,7 @@ public class JSqlsh {
                     if (command instanceof ExitCommand) {
                         out.println("Bye!");
                         out.flush();
+                        jlineHistory.flush();
                         break;
                     }
                     try {
@@ -65,7 +77,7 @@ public class JSqlsh {
 
                             out.print(ASCIITable.getInstance().getTable(headers, data, IASCIITable.ALIGN_LEFT));
                         }
-                        out.print("\n");
+                        out.print(result.getResultType() == CommandResultType.TABLE ? "\n" : "\n\n");
                     }
                 } else {
                     err = commandParseResult.getErrors();
