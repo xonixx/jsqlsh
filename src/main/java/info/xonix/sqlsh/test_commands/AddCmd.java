@@ -1,6 +1,8 @@
 package info.xonix.sqlsh.test_commands;
 
 import info.xonix.sqlsh.*;
+import info.xonix.sqlsh.annotations.Command;
+import info.xonix.sqlsh.annotations.CommandParam;
 
 /**
  * User: xonix
@@ -29,9 +31,5 @@ public class AddCmd implements ICommand {
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
         return ICommandResult.text(String.valueOf(a+b));
-    }
-
-    @Override
-    public void setValue(String value) {
     }
 }

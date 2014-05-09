@@ -1,4 +1,4 @@
-package info.xonix.sqlsh;
+package info.xonix.sqlsh.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,14 +8,11 @@ import java.lang.annotation.Target;
 /**
  * User: xonix
  * Date: 4/20/14
- * Time: 12:01 AM
+ * Time: 12:07 AM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
-public @interface CommandParam {
-    String name(); // defaults for field name
-
+@Target({ElementType.TYPE})
+public @interface Command {
+    String name(); // defaults for cls name
     String description();
-
-    boolean optional() default true; // todo: maybe false?
 }

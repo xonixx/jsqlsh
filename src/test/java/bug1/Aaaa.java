@@ -1,6 +1,6 @@
 package bug1;
 
-import info.xonix.sqlsh.Command;
+import info.xonix.sqlsh.annotations.Command;
 
 /**
  * User: xonix

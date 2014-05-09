@@ -1,21 +1,13 @@
-package info.xonix.sqlsh;
+package info.xonix.sqlsh.prm;
+
+import java.lang.annotation.Annotation;
 
 /**
-* User: xonix
-* Date: 4/25/14
-* Time: 11:37 PM
-*/
-public interface IPrm {
-    public CommandParam getParam();
-
-    Class getParamType();
-
-    boolean isValid(String value);
-
-    void set(String value);
-}
-
-abstract class PrmAbstract implements IPrm {
+ * User: xonix
+ * Date: 5/10/14
+ * Time: 1:57 AM
+ */
+abstract class PrmAbstract<A extends Annotation> implements IPrm<A> {
     private static class ConvertExc extends Exception {}
 
     @Override

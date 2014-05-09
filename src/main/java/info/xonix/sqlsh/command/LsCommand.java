@@ -1,6 +1,8 @@
 package info.xonix.sqlsh.command;
 
 import info.xonix.sqlsh.*;
+import info.xonix.sqlsh.annotations.Command;
+import info.xonix.sqlsh.annotations.CommandArgument;
 
 import java.sql.*;
 
@@ -14,7 +16,10 @@ import java.sql.*;
         description = "list elements in current location"
 )
 public class LsCommand implements ICommand {
-    private String value;
+    @CommandArgument(
+            description = "path to list"
+    )
+    private String path;
 
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
@@ -32,19 +37,19 @@ public class LsCommand implements ICommand {
     private ICommandResult list(Connection connection, IDbObject currentObject) throws SQLException, CommandExecutionException {
         if (currentObject == null) {
             // top level -> list databases
-            if (value == null) {
+            if (path == null) {
                 return listDatabases(connection);
             } else {
-                return listDbTables(connection, value);
+                return listDbTables(connection, path);
             }
         } else if (currentObject.getType() == DbObjectType.DATABASE) {
-            if (value == null) {
+            if (path == null) {
                 return listDbTables(connection, currentObject.getName());
             } else {
-                return listTableColumns(connection, value);
+                return listTableColumns(connection, path);
             }
         } else if (currentObject.getType() == DbObjectType.TABLE) {
-            if (value == null) {
+            if (path == null) {
                 return listTableColumns(connection, currentObject.getName());
             } else {
                 throw new CommandExecutionException("doesn't exist");
@@ -79,10 +84,5 @@ public class LsCommand implements ICommand {
         statement.close();
 
         return result;
-    }
-
-    @Override
-    public void setValue(String value) {
-        this.value = value;
     }
 }

@@ -37,10 +37,10 @@ public interface ICommandParseResult {
     }
 
     public static ICommandParseResult error(String error) {
-        return new CommandParseResult(error,null);
+        return new CommandParseResult(error, null);
     }
 
     public static ICommandParseResult command(ICommand command) {
-        return new CommandParseResult(null,command);
+        return new CommandParseResult(null, command);
     }
 }

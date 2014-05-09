@@ -1,6 +1,10 @@
 package info.xonix.sqlsh.command;
 
 import info.xonix.sqlsh.*;
+import info.xonix.sqlsh.annotations.Command;
+import info.xonix.sqlsh.annotations.CommandArgument;
+import info.xonix.sqlsh.annotations.CommandParam;
+import info.xonix.sqlsh.prm.IPrm;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
@@ -15,12 +19,12 @@ import java.util.List;
         description = "lists all commands and provides help for each")
 public class HelpCommand implements ICommand {
 
+    @CommandArgument(
+            name = "command",
+            description = "command to provide help for",
+            optional = true
+    )
     private String arg;
-
-    @Override
-    public void setValue(String value) {
-        arg = value;
-    }
 
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
@@ -51,15 +55,15 @@ public class HelpCommand implements ICommand {
             sb.append(command.name())
                     .append("\n\t")
                     .append(command.description());
-            List<IPrm> prms = Engine.listPrms(cmd.klass, null);
+            List<IPrm<CommandParam>> prms = Engine.listPrms(cmd.klass, null, CommandParam.class);
             if (!prms.isEmpty()) {
                 prms.sort((a, b) -> a.getParam().name().compareTo(b.getParam().name()));
                 sb.append("\n\n\tParameters:");
-                for (IPrm prm : prms) {
+                for (IPrm<CommandParam> prm : prms) {
                     sb.append("\n\t\t")
                             .append(prm.getParam().name())
                             .append(" (")
-                            .append(prm.getParamType())
+                            .append(prm.getParamType().getSimpleName().toLowerCase())
                             .append(") - ")
                             .append(prm.getParam().description());
                 }

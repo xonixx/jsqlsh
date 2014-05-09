@@ -1,6 +1,8 @@
 package info.xonix.sqlsh.command;
 
 import info.xonix.sqlsh.*;
+import info.xonix.sqlsh.annotations.Command;
+import info.xonix.sqlsh.annotations.CommandParam;
 
 import java.sql.*;
 
@@ -65,9 +67,5 @@ public class OpenCommand implements ICommand {
         } catch (SQLException e) {
             throw new CommandExecutionException("Can't fetch DB version", e);
         }
-    }
-
-    @Override
-    public void setValue(String value) {
     }
 }

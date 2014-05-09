@@ -1,5 +1,6 @@
-package info.xonix.sqlsh;
+package info.xonix.sqlsh.prm;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -7,18 +8,20 @@ import java.lang.reflect.Method;
  * Date: 4/25/14
  * Time: 11:38 PM
  */
-class SetterPrm extends PrmAbstract {
+public class SetterPrm<A extends Annotation> extends PrmAbstract<A> {
     private final Method setterMethod;
     private final Object obj;
+    private final Class<A> annCls;
 
-    SetterPrm(Method setterMethod, Object obj) {
+    public SetterPrm(Method setterMethod, Object obj, Class<A> annCls) {
         this.setterMethod = setterMethod;
         this.obj = obj;
+        this.annCls = annCls;
     }
 
     @Override
-    public CommandParam getParam() {
-        return setterMethod.getAnnotation(CommandParam.class);
+    public A getParam() {
+        return setterMethod.getAnnotation(annCls);
     }
 
     @Override

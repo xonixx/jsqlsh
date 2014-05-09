@@ -1,6 +1,7 @@
 package info.xonix.sqlsh.command;
 
 import info.xonix.sqlsh.*;
+import info.xonix.sqlsh.annotations.Command;
 
 /**
  * User: xonix
@@ -15,9 +16,5 @@ public class ExitCommand implements ICommand {
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
         return null;
-    }
-
-    @Override
-    public void setValue(String value) {
     }
 }

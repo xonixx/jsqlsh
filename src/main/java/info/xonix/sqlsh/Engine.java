@@ -1,9 +1,15 @@
 package info.xonix.sqlsh;
 
 import com.google.common.base.Predicate;
+import info.xonix.sqlsh.annotations.CommandArgument;
+import info.xonix.sqlsh.annotations.CommandParam;
+import info.xonix.sqlsh.prm.FieldPrm;
+import info.xonix.sqlsh.prm.IPrm;
+import info.xonix.sqlsh.prm.SetterPrm;
 import org.apache.commons.lang.StringUtils;
 import org.reflections.ReflectionUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -85,20 +91,28 @@ public class Engine implements IEngine {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new CommandParseException("Can't instantiate class: " + cls);
         }
-        List<IPrm> prms = listPrms(cls, commandObj);
+        List<IPrm<CommandParam>> prms = listPrms(cls, commandObj, CommandParam.class);
         Args cmdArgs = processArgs(args.subList(1, args.size()));
 
         bind(prms, cmdArgs);
-        commandObj.setValue(cmdArgs.getValue());
+        List<IPrm<CommandArgument>> argSetter = listPrms(cls, commandObj, CommandArgument.class);
+        for (IPrm<CommandArgument> as : argSetter) {
+            String value = cmdArgs.getValue();
+            if (as.isValid(value)) {
+                as.set(value);
+            } else {
+                throw new CommandParseException(getTypeErrorMsg(as.getParam().name(), value, as.getParamType()));
+            }
+        }
 
         return commandObj;
     }
 
-    private void bind(List<IPrm> prms, Args cmdArgs) throws CommandParseException {
+    private void bind(List<IPrm<CommandParam>> prms, Args cmdArgs) throws CommandParseException {
         Map<String, String> params = new HashMap<>();
         Set<String> knownParams = new HashSet<>();
 
-        for (IPrm prm : prms) {
+        for (IPrm<CommandParam> prm : prms) {
             knownParams.add(prm.getParam().name());
         }
 
@@ -108,7 +122,7 @@ public class Engine implements IEngine {
 
         List<String> errors = new LinkedList<>();
 
-        for (IPrm prm : prms) {
+        for (IPrm<CommandParam> prm : prms) {
             String pName = prm.getParam().name();
 
             if (!prm.getParam().optional() && !params.containsKey(pName)) {
@@ -121,7 +135,7 @@ public class Engine implements IEngine {
                 if (prm.isValid(pVal)) {
                     prm.set(pVal);
                 } else {
-                    errors.add("Param value '" + pVal + "' is invalid for param '" + pName + "' with type " + prm.getParamType());
+                    errors.add(getTypeErrorMsg(pName, pVal, prm.getParamType()));
                 }
             }
         }
@@ -141,6 +155,10 @@ public class Engine implements IEngine {
             sb.setLength(sb.length() - 1);
             throw new CommandParseException(sb.toString());
         }
+    }
+
+    private String getTypeErrorMsg(String pName, String pVal, Class paramType) {
+        return "Param value '" + pVal + "' is invalid for param '" + pName + "' with type " + paramType;
     }
 
     public static Args processArgs(List<String> args) throws CommandParseException {
@@ -196,22 +214,22 @@ public class Engine implements IEngine {
         };
     }
 
-    public static List<IPrm> listPrms(Class cls, ICommand commandObj) {
-        Predicate<AnnotatedElement> hasCommandParamAnn = ReflectionUtils.withAnnotation(CommandParam.class);
+    public static <A extends Annotation> List<IPrm<A>> listPrms(Class cls, ICommand commandObj, Class<A> annCls) {
+        Predicate<AnnotatedElement> hasCommandParamAnn = ReflectionUtils.withAnnotation(annCls);
         Set<Field> fields = ReflectionUtils.getAllFields(cls, hasCommandParamAnn);
         Set<Method> setters = ReflectionUtils.getAllMethods(cls,
                 hasCommandParamAnn,
                 ReflectionUtils.withPrefix("set"),
                 ReflectionUtils.withParametersCount(1));
 
-        List<IPrm> res = new LinkedList<>();
+        List<IPrm<A>> res = new LinkedList<>();
 
         for (Field field : fields) {
-            res.add(new FieldPrm(field, commandObj));
+            res.add(new FieldPrm<>(field, commandObj, annCls));
         }
 
         for (Method setter : setters) {
-            res.add(new SetterPrm(setter, commandObj));
+            res.add(new SetterPrm<>(setter, commandObj, annCls));
         }
 
         return res;

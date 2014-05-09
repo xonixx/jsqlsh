@@ -1,5 +1,6 @@
 package info.xonix.sqlsh;
 
+import info.xonix.sqlsh.annotations.Command;
 import org.reflections.Reflections;
 
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * User: xonix

@@ -1,5 +1,7 @@
 package info.xonix.sqlsh;
 
+import info.xonix.sqlsh.annotations.Command;
+
 /**
  * TODO: good name
  * User: xonix

@@ -1,5 +1,6 @@
-package info.xonix.sqlsh;
+package info.xonix.sqlsh.prm;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
@@ -7,18 +8,20 @@ import java.lang.reflect.Field;
  * Date: 4/25/14
  * Time: 11:38 PM
  */
-class FieldPrm extends PrmAbstract {
+public class FieldPrm<A extends Annotation> extends PrmAbstract<A> {
     private final Field field;
-    private Object obj;
+    private final Object obj;
+    private final Class<A> annCls;
 
-    public FieldPrm(Field field, Object obj) {
+    public FieldPrm(Field field, Object obj, Class<A> annCls) {
         this.field = field;
         this.obj = obj;
+        this.annCls = annCls;
     }
 
     @Override
-    public CommandParam getParam() {
-        return field.getAnnotation(CommandParam.class);
+    public A getParam() {
+        return field.getAnnotation(annCls);
     }
 
     @Override

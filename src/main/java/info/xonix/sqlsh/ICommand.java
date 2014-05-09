@@ -7,6 +7,4 @@ package info.xonix.sqlsh;
  */
 public interface ICommand {
     ICommandResult execute(IContext context) throws CommandExecutionException;
-
-    void setValue(String value);
 }
