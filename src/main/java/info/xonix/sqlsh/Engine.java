@@ -87,7 +87,7 @@ public class Engine implements IEngine {
         Class cls = cmd.klass;
         ICommand commandObj;
         try {
-            commandObj = (ICommand)cls.newInstance();
+            commandObj = (ICommand) cls.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new CommandParseException("Can't instantiate class: " + cls);
         }
@@ -112,10 +112,6 @@ public class Engine implements IEngine {
         Map<String, String> params = new HashMap<>();
         Set<String> knownParams = new HashSet<>();
 
-        for (IPrm<CommandParam> prm : prms) {
-            knownParams.add(prm.getParam().name());
-        }
-
         for (KeyVal keyVal : cmdArgs.getArgs()) {
             params.put(keyVal.key, keyVal.val);
         }
@@ -123,7 +119,8 @@ public class Engine implements IEngine {
         List<String> errors = new LinkedList<>();
 
         for (IPrm<CommandParam> prm : prms) {
-            String pName = prm.getParam().name();
+            String pName = StringUtils.defaultIfEmpty(prm.getParam().name(), prm.getFieldName());
+            knownParams.add(pName);
 
             if (!prm.getParam().optional() && !params.containsKey(pName)) {
                 errors.add("Param " + pName + " is mandatory");

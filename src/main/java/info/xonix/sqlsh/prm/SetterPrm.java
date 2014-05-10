@@ -1,5 +1,7 @@
 package info.xonix.sqlsh.prm;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
@@ -27,6 +29,11 @@ public class SetterPrm<A extends Annotation> extends PrmAbstract<A> {
     @Override
     public Class getParamType() {
         return setterMethod.getParameterTypes()[0];
+    }
+
+    @Override
+    public String getFieldName() {
+        return StringUtils.uncapitalize(setterMethod.getName().substring(3));
     }
 
     @Override

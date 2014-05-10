@@ -30,6 +30,11 @@ public class FieldPrm<A extends Annotation> extends PrmAbstract<A> {
     }
 
     @Override
+    public String getFieldName() {
+        return field.getName();
+    }
+
+    @Override
     public void set(String value) {
         try {
             field.setAccessible(true);

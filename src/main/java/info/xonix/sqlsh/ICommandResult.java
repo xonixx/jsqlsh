@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -98,5 +99,29 @@ public interface ICommandResult {
                 throw new UnsupportedOperationException("This result type not supported");
             }
         };
+    }
+
+    public static ICommandResult table(String[] columns, Object[]... lines) {
+        List<String> cols = Arrays.asList(columns);
+        List<List<String>> rows = new ArrayList<>();
+        for (Object[] line : lines) {
+            String[] row = new String[line.length];
+            for (int i = 0; i < line.length; i++) {
+                Object o = line[i];
+                row[i] = o == null ? "" : o.toString();
+            }
+            rows.add(Arrays.asList(row));
+        }
+        return table(new ITableResult() {
+            @Override
+            public List<String> getColumnNames() {
+                return cols;
+            }
+
+            @Override
+            public List<List<String>> getData() {
+                return rows;
+            }
+        });
     }
 }

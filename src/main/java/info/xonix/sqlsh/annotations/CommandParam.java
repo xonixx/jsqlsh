@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface CommandParam {
-    String name(); // defaults for field name
+    String name() default ""; // defaults for field name
 
     String description();
 

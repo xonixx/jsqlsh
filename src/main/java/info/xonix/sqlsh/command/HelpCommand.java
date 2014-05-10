@@ -56,20 +56,36 @@ public class HelpCommand implements ICommand {
                     .append("\n\t")
                     .append(command.description());
             List<IPrm<CommandParam>> prms = Engine.listPrms(cmd.klass, null, CommandParam.class);
-            if (!prms.isEmpty()) {
+            List<IPrm<CommandArgument>> arg = Engine.listPrms(cmd.klass, null, CommandArgument.class);
+            if (!prms.isEmpty() || !arg.isEmpty()) {
                 prms.sort((a, b) -> a.getParam().name().compareTo(b.getParam().name()));
                 sb.append("\n\n\tParameters:");
                 for (IPrm<CommandParam> prm : prms) {
                     sb.append("\n\t\t")
-                            .append(prm.getParam().name())
-                            .append(" (")
-                            .append(prm.getParamType().getSimpleName().toLowerCase())
-                            .append(") - ")
-                            .append(prm.getParam().description());
+                            .append(formParamLine(
+                                    '-' + StringUtils.defaultIfEmpty(prm.getParam().name(), prm.getFieldName()),
+                                    prm.getParamType(),
+                                    prm.getParam().description(),
+                                    prm.getParam().optional()));
+                }
+                for (IPrm<CommandArgument> prm : arg) {
+                    sb.append("\n\t\t")
+                            .append(formParamLine(
+                            StringUtils.defaultIfEmpty(prm.getParam().name(), prm.getFieldName()),
+                            prm.getParamType(),
+                            prm.getParam().description(),
+                            prm.getParam().optional()));
+                    break; // only 1
                 }
             }
         }
 
         return ICommandResult.text(sb.toString());
+    }
+
+    private String formParamLine(String name, Class type, String description, boolean optional) {
+        if (optional)
+            name = '[' + name + ']';
+        return name + " (" + type.getSimpleName().toLowerCase() + ") - " + description;
     }
 }
