@@ -3,8 +3,10 @@ package info.xonix.sqlsh.command;
 import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandArgument;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.sql.*;
+import java.util.List;
 
 /**
  * User: xonix
@@ -21,68 +23,110 @@ public class LsCommand implements ICommand {
     )
     private String path;
 
+    private MetadataAccessor metadataAccessor;
+
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
         ISession session = context.getSession();
         Connection connection = session.getConnection();
-
+        metadataAccessor = new MysqlMetadataAccessor(connection);
         IDbObject currentObject = session.getCurrentObject();
+
         try {
-            return list(connection, currentObject);
+            String[] pathParts = path != null ? path.split("/") : new String[0];
+            IDbObject targetDbObject = resolve(currentObject, pathParts);
+            if (targetDbObject == null) {
+                throw new CommandExecutionException("Not found.");
+            }
+            return list(targetDbObject);
         } catch (SQLException e) {
             throw new CommandExecutionException("Can't ls", e);
         }
     }
 
-    private ICommandResult list(Connection connection, IDbObject currentObject) throws SQLException, CommandExecutionException {
-        if (currentObject == null) {
-            // top level -> list databases
-            if (path == null) {
-                return listDatabases(connection);
-            } else {
-                return listDbTables(connection, path);
+    private IDbObject resolve(IDbObject relObject, String[] pathParts) {
+        if (pathParts.length == 0) {
+            return relObject;
+        } else {
+            return resolve(resolve(relObject, pathParts[0]),
+                    (String[]) ArrayUtils.subarray(pathParts, 1, pathParts.length));
+        }
+    }
+
+    private IDbObject resolve(IDbObject relObject, String part) {
+        if (relObject == null) {
+            // top level
+            if (metadataAccessor.hasDb(part)) {
+                return DbObject.db(part);
             }
-        } else if (currentObject.getType() == DbObjectType.DATABASE) {
-            if (path == null) {
-                return listDbTables(connection, currentObject.getName());
-            } else {
-                return listTableColumns(connection, path);
-            }
-        } else if (currentObject.getType() == DbObjectType.TABLE) {
-            if (path == null) {
-                return listTableColumns(connection, currentObject.getName());
-            } else {
-                throw new CommandExecutionException("doesn't exist");
+        } else if (relObject.getType() == DbObjectType.DATABASE) {
+            if (metadataAccessor.hasTable(relObject.getName(), part)) {
+                return new DbObject(part, DbObjectType.TABLE, relObject);
+            } else if (metadataAccessor.hasView(relObject.getName(), part)) {
+                return new DbObject(part, DbObjectType.VIEW, relObject);
             }
         }
         return null;
     }
 
-    private ICommandResult listTableColumns(Connection connection, String tblName) {
+    private ICommandResult list(IDbObject target) throws SQLException, CommandExecutionException {
+        if (target == null) {
+            return listDatabases();
+        } else if (target.getType() == DbObjectType.DATABASE) {
+            return listDbTables(target.getName());
+        } else if (target.getType() == DbObjectType.TABLE ||
+                target.getType() == DbObjectType.VIEW) {
+            return listTableColumns(target.getParent().getName(), target.getName());
+        }
         return null;
     }
 
-    private ICommandResult listDbTables(Connection connection, String dbName) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(
-                "select table_name as name, table_type as type " +
-                        "from information_schema.tables " +
-                        "where table_schema=?");
-        statement.setString(1, dbName);
-        ResultSet resultSet = statement.executeQuery();
-        ICommandResult result = ICommandResult.table(resultSet);
+    private ICommandResult listTableColumns(String dbName, String tblName) {
+        TableResult.Builder builder = new TableResult.Builder().columns(
+                "field",
+                "type",
+                "null",
+                "key",
+                "default",
+                "extra");
 
-        statement.close();
+        for (ColumnDescriptor column : metadataAccessor.listColumns(dbName, tblName)) {
+            builder.row(
+                    column.field,
+                    column.type,
+                    column._null,
+                    column.key,
+                    column._default,
+                    column.extra);
+        }
 
-        return result;
+        return builder.build();
     }
 
-    private ICommandResult listDatabases(Connection connection) throws SQLException {
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("show databases;");
-        ICommandResult result = ICommandResult.table(resultSet);
+    private ICommandResult listDbTables(String dbName) throws SQLException {
+        List<String> tables = metadataAccessor.listTables(dbName);
+        List<String> views = metadataAccessor.listViewes(dbName);
 
-        statement.close();
+        TableResult.Builder builder = new TableResult.Builder().columns("name", "type");
 
-        return result;
+        for (String table : tables) {
+            builder.row(table, "table");
+        }
+
+        for (String view : views) {
+            builder.row(view, "view");
+        }
+
+        return builder.build();
+    }
+
+    private ICommandResult listDatabases() throws SQLException {
+        TableResult.Builder builder = new TableResult.Builder().columns("name");
+
+        for (String db : metadataAccessor.listDatabases()) {
+            builder.row(db);
+        }
+
+        return builder.build();
     }
 }

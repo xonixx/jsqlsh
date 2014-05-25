@@ -56,8 +56,8 @@ public interface ICommandResult {
 
             res = new ArrayList<>();
 
-            int i=0;
-            while (resultSet.next() && i<=limit) {
+            int i = 0;
+            while (resultSet.next() && i <= limit) {
                 i++;
                 ArrayList<String> row = new ArrayList<>();
                 for (int j = 1; j <= columnCount; j++) {
@@ -69,36 +69,7 @@ public interface ICommandResult {
             throw new RuntimeException(e);
         }
 
-        return table(new ITableResult() {
-            @Override
-            public List<String> getColumnNames() {
-                return cols;
-            }
-
-            @Override
-            public List<List<String>> getData() {
-                return res;
-            }
-        });
-    }
-
-    public static ICommandResult table(ITableResult result) {
-        return new ICommandResult() {
-            @Override
-            public CommandResultType getResultType() {
-                return CommandResultType.TABLE;
-            }
-
-            @Override
-            public ITableResult getTableResult() {
-                return result;
-            }
-
-            @Override
-            public String getTextResult() {
-                throw new UnsupportedOperationException("This result type not supported");
-            }
-        };
+        return new TableResult(cols, res);
     }
 
     public static ICommandResult table(String[] columns, Object[]... lines) {
@@ -112,16 +83,6 @@ public interface ICommandResult {
             }
             rows.add(Arrays.asList(row));
         }
-        return table(new ITableResult() {
-            @Override
-            public List<String> getColumnNames() {
-                return cols;
-            }
-
-            @Override
-            public List<List<String>> getData() {
-                return rows;
-            }
-        });
+        return new TableResult(cols, rows);
     }
 }

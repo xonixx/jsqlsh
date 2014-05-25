@@ -8,5 +8,7 @@ package info.xonix.sqlsh;
 public interface IDbObject {
     String getName();
 
+    IDbObject getParent();
+
     DbObjectType getType();
 }
