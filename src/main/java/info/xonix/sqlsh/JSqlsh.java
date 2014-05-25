@@ -37,7 +37,9 @@ public class JSqlsh {
             console.setPrompt("> ");
             String line;
             Engine engine = new Engine();
-            Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), new Session());
+            Session session = new Session();
+            session.setCurrentObject(DbObject.root());
+            Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), session);
             while ((line = console.readLine()) != null) {
                 ICommandParseResult commandParseResult = engine.parseCommand(line);
                 String err = null;

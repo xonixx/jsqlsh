@@ -10,17 +10,17 @@ import java.util.List;
  * Time: 6:20 PM
  */
 public class MysqlMetadataAccessor implements MetadataAccessor {
-    public static final String TABLE = "TABLE";
+    public static final String TABLE = "BASE TABLE";
     public static final String VIEW = "VIEW";
     private Connection connection;
 
     private final static String LIMIT_1 = " LIMIT 1";
 
     private final static String TBL_QRY =
-            "select table_name as name, table_type as type " +
+            "select table_name, table_type " +
                     "from information_schema.tables " +
-                    "where table_schema=? and type=?";
-    private final static String TBL_QRY_NAME = TBL_QRY + " and name=?";
+                    "where table_schema=? and table_type=?";
+    private final static String TBL_QRY_NAME = TBL_QRY + " and table_name=?";
 
     private final static String DB_QRY = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA";
     private final static String DB_QRY_NAME = DB_QRY + " WHERE SCHEMA_NAME = ?";
@@ -68,11 +68,11 @@ public class MysqlMetadataAccessor implements MetadataAccessor {
         for (List<Object> row : list) {
             res.add(new ColumnDescriptor(
                     (String) row.get(0),
-                    (String) row.get(0),
-                    (String) row.get(0),
-                    (String) row.get(0),
-                    (String) row.get(0),
-                    (String) row.get(0)
+                    (String) row.get(1),
+                    (String) row.get(2),
+                    (String) row.get(3),
+                    (String) row.get(4),
+                    (String) row.get(5)
             ));
         }
         return res;

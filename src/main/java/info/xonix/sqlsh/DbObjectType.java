@@ -6,6 +6,7 @@ package info.xonix.sqlsh;
  * Time: 4:43 PM
  */
 public enum DbObjectType {
+    ROOT,
     DATABASE,
     TABLE,
     VIEW

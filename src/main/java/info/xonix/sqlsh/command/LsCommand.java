@@ -4,6 +4,7 @@ import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandArgument;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.*;
 import java.util.List;
@@ -35,9 +36,6 @@ public class LsCommand implements ICommand {
         try {
             String[] pathParts = path != null ? path.split("/") : new String[0];
             IDbObject targetDbObject = resolve(currentObject, pathParts);
-            if (targetDbObject == null) {
-                throw new CommandExecutionException("Not found.");
-            }
             return list(targetDbObject);
         } catch (SQLException e) {
             throw new CommandExecutionException("Can't ls", e);
@@ -54,8 +52,7 @@ public class LsCommand implements ICommand {
     }
 
     private IDbObject resolve(IDbObject relObject, String part) {
-        if (relObject == null) {
-            // top level
+        if (relObject.getType() == DbObjectType.ROOT) {
             if (metadataAccessor.hasDb(part)) {
                 return DbObject.db(part);
             }
@@ -71,6 +68,8 @@ public class LsCommand implements ICommand {
 
     private ICommandResult list(IDbObject target) throws SQLException, CommandExecutionException {
         if (target == null) {
+            throw new CommandExecutionException("Not found.");
+        } else if (target.getType() == DbObjectType.ROOT) {
             return listDatabases();
         } else if (target.getType() == DbObjectType.DATABASE) {
             return listDbTables(target.getName());
@@ -92,12 +91,12 @@ public class LsCommand implements ICommand {
 
         for (ColumnDescriptor column : metadataAccessor.listColumns(dbName, tblName)) {
             builder.row(
-                    column.field,
-                    column.type,
-                    column._null,
-                    column.key,
-                    column._default,
-                    column.extra);
+                    StringUtils.defaultString(column.field),
+                    StringUtils.defaultString(column.type),
+                    StringUtils.defaultString(column._null),
+                    StringUtils.defaultString(column.key),
+                    StringUtils.defaultString(column._default),
+                    StringUtils.defaultString(column.extra));
         }
 
         return builder.build();

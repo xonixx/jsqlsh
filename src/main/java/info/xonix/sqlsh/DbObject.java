@@ -10,6 +10,9 @@ public class DbObject implements IDbObject {
     private final DbObjectType type;
     private final IDbObject parent;
 
+    public static DbObject root() {
+        return new DbObject("", DbObjectType.ROOT, null);
+    }
     public static DbObject db(String name) {
         return new DbObject(name, DbObjectType.DATABASE, null);
     }

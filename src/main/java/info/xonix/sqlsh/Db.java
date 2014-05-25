@@ -11,14 +11,13 @@ import java.util.List;
  */
 public class Db {
     public static boolean exists(Connection connection, String query, Object... params) {
-        try (PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-            for (int i = 0; i < params.length; i++) {
-                Object param = params[i];
-                statement.setObject(i + 1, param);
+            for (int i = 1; i <= params.length; i++) {
+                Object param = params[i - 1];
+                statement.setObject(i, param);
             }
-
+            ResultSet resultSet = statement.executeQuery();
             return resultSet.first();
 
         } catch (SQLException e) {
@@ -42,16 +41,16 @@ public class Db {
     public static List<List<Object>> list(Connection connection, String query, Object... params) {
         List<List<Object>> result = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
 
+            for (int i = 1; i <= params.length; i++) {
+                Object param = params[i - 1];
+                statement.setObject(i, param);
+            }
+
+            ResultSet resultSet = statement.executeQuery();
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
-
-            for (int i = 0; i < params.length; i++) {
-                Object param = params[i];
-                statement.setObject(i + 1, param);
-            }
 
             while (resultSet.next()) {
                 ArrayList<Object> row = new ArrayList<>();
