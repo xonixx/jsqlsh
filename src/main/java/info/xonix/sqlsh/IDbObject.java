@@ -19,4 +19,9 @@ public interface IDbObject {
     IDbObject resolve(String path);
 
     MetadataAccessor getMetadataAccessor();
+
+    /**
+     * @return path of this db object
+     */
+    String pwd();
 }

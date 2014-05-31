@@ -54,6 +54,8 @@ public class JSqlsh {
                     }
                     try {
                         result = command.execute(context);
+                        IDbObject currentObject = session.getCurrentObject();
+                        console.setPrompt((currentObject != null ? currentObject.pwd() : "") + "> ");
                     } catch (Throwable e) {
                         err = e.getMessage();
                         throwable = e;

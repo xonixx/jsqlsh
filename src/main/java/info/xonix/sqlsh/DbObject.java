@@ -1,6 +1,11 @@
 package info.xonix.sqlsh;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * User: xonix
@@ -86,5 +91,22 @@ public class DbObject implements IDbObject {
     @Override
     public MetadataAccessor getMetadataAccessor() {
         return metadataAccessor;
+    }
+
+    @Override
+    public String pwd() {
+        List<String> parts = new ArrayList<>();
+        DbObject currentObject = this;
+        do {
+            DbObjectType type = currentObject.getType();
+            parts.add(type == DbObjectType.ROOT ? currentObject.getName()
+                    : (
+                    type == DbObjectType.DATABASE ? "" :
+                            type == DbObjectType.TABLE ? "" :
+                                    type == DbObjectType.VIEW ? "v:" : "???") + currentObject.getName());
+            currentObject = currentObject.getParent();
+        } while (currentObject != null);
+        Collections.reverse(parts);
+        return StringUtils.join(parts, "/");
     }
 }
