@@ -61,7 +61,7 @@ public class OpenCommand implements ICommand {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("select VERSION()");
             if (resultSet.next()) {
-                return ICommandResult.text(resultSet.getString(1));
+                return new TextResult(resultSet.getString(1));
             } else {
                 throw new SQLException();
             }

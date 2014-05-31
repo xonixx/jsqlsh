@@ -40,6 +40,6 @@ public class CdCommand implements ICommand {
         } else {
             ((Session) session).setCurrentObject(targetDbObject);
         }
-        return ICommandResult.text("");
+        return new TextResult("");
     }
 }

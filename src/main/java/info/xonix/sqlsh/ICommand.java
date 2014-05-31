@@ -7,4 +7,8 @@ package info.xonix.sqlsh;
  */
 public interface ICommand {
     ICommandResult execute(IContext context) throws CommandExecutionException;
+
+    public static ICommand doNothing() {
+        return context -> new TextResult("");
+    }
 }

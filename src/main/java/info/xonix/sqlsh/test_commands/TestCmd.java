@@ -1,9 +1,6 @@
 package info.xonix.sqlsh.test_commands;
 
-import info.xonix.sqlsh.CommandExecutionException;
-import info.xonix.sqlsh.ICommand;
-import info.xonix.sqlsh.ICommandResult;
-import info.xonix.sqlsh.IContext;
+import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandArgument;
 import info.xonix.sqlsh.annotations.CommandParam;
@@ -43,7 +40,7 @@ public class TestCmd implements ICommand {
 
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
-        return ICommandResult.table(
+        return TableResult.create(
                 new String[]{"PARAM", "VALUE"},
                 new Object[]{"-param1", param1},
                 new Object[]{"-param2", param2},

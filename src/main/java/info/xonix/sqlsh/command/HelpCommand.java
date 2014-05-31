@@ -49,7 +49,7 @@ public class HelpCommand implements ICommand {
         } else {
             Cmd cmd = Core.resolveCommand(arg);
             if (cmd == null) {
-                return ICommandResult.text("Command " + arg + " doesn't exist");
+                return new TextResult("Command " + arg + " doesn't exist");
             }
             Command command = cmd.command;
             sb.append(command.name())
@@ -80,7 +80,7 @@ public class HelpCommand implements ICommand {
             }
         }
 
-        return ICommandResult.text(sb.toString());
+        return new TextResult(sb.toString());
     }
 
     private String formParamLine(String name, Class type, String description, boolean optional) {

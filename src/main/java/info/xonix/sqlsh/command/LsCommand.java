@@ -27,6 +27,10 @@ public class LsCommand implements ICommand {
         ISession session = context.getSession();
         IDbObject currentObject = session.getCurrentObject();
 
+        if (currentObject == null) {
+            throw new CommandExecutionException("Not connected");
+        }
+
         IDbObject targetDbObject = currentObject.resolve(path);
 
         return list(targetDbObject);

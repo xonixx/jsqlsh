@@ -73,7 +73,7 @@ public class Engine implements IEngine {
 
     private ICommand parseArgs(List<String> args) throws CommandParseException {
         if (args == null || args.isEmpty()) {
-            throw new CommandParseException("empty command");
+            return ICommand.doNothing();
         }
 
         String cmdName = args.get(0);

@@ -66,21 +66,23 @@ public class JSqlsh {
                         } else {
                             ITableResult tableResult = result.getTableResult();
 
-                            List<String> columnNames = tableResult.getColumnNames();
-                            String[] headers = columnNames.toArray(new String[columnNames.size()]);
+                            if (tableResult.getData().size() > 0) {
+                                List<String> columnNames = tableResult.getColumnNames();
+                                String[] headers = columnNames.toArray(new String[columnNames.size()]);
 
-                            List<List<String>> tableData = tableResult.getData();
-                            String[][] data = new String[tableData.size()][columnNames.size()];
+                                List<List<String>> tableData = tableResult.getData();
+                                String[][] data = new String[tableData.size()][columnNames.size()];
 
-                            for (int i = 0; i < tableData.size(); i++) {
-                                List<String> rows = tableData.get(i);
-                                for (int j = 0; j < rows.size(); j++) {
-                                    String cell = rows.get(j);
-                                    data[i][j] = cell;
+                                for (int i = 0; i < tableData.size(); i++) {
+                                    List<String> rows = tableData.get(i);
+                                    for (int j = 0; j < rows.size(); j++) {
+                                        String cell = rows.get(j);
+                                        data[i][j] = cell;
+                                    }
                                 }
-                            }
 
-                            out.print(ASCIITable.getInstance().getTable(headers, data, IASCIITable.ALIGN_LEFT));
+                                out.print(ASCIITable.getInstance().getTable(headers, data, IASCIITable.ALIGN_LEFT));
+                            }
                         }
                         out.print(result.getResultType() == CommandResultType.TABLE
                                 || "".equals(result.getTextResult()) ? "\n" : "\n\n");
@@ -89,9 +91,13 @@ public class JSqlsh {
                     err = commandParseResult.getErrors();
                 }
 
-                if (err != null || throwable != null) {
+                if (err != null) {
                     out.print("\u001B[33m");// red
                     out.print(err);
+                    out.println("\u001B[0m");
+                }
+                if (throwable != null) {
+                    out.print("\u001B[33m");// red
                     if (!(throwable instanceof CommandExecutionException)) {
                         throwable.printStackTrace();
                     }

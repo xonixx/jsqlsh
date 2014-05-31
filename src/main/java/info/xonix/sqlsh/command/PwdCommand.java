@@ -21,7 +21,7 @@ public class PwdCommand implements ICommand {
             throw new CommandExecutionException("Not connected");
         } else {
             String result = currentObject.pwd();
-            return ICommandResult.text(result);
+            return new TextResult(result);
         }
     }
 }

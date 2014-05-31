@@ -30,6 +30,6 @@ public class AddCmd implements ICommand {
 
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
-        return ICommandResult.text(String.valueOf(a+b));
+        return new TextResult(String.valueOf(a+b));
     }
 }
