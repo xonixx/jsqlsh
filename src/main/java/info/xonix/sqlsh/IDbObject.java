@@ -11,4 +11,12 @@ public interface IDbObject {
     IDbObject getParent();
 
     DbObjectType getType();
+
+    /**
+     * @param path like "dbname/tblname", null - resolves to same object
+     * @return db object
+     */
+    IDbObject resolve(String path);
+
+    MetadataAccessor getMetadataAccessor();
 }

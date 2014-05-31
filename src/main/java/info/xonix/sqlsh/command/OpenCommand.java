@@ -55,6 +55,7 @@ public class OpenCommand implements ICommand {
 
         Session session = (Session) context.getSession();
         session.setConnection(connection);
+        session.setCurrentObject(DbObject.root(new MysqlMetadataAccessor(connection)));
 
         try {
             Statement statement = connection.createStatement();

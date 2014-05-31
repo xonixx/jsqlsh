@@ -38,11 +38,11 @@ public class JSqlsh {
             String line;
             Engine engine = new Engine();
             Session session = new Session();
-            session.setCurrentObject(DbObject.root());
             Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), session);
             while ((line = console.readLine()) != null) {
                 ICommandParseResult commandParseResult = engine.parseCommand(line);
                 String err = null;
+                Throwable throwable = null;
                 if (commandParseResult.isValid()) {
                     ICommandResult result = null;
                     ICommand command = commandParseResult.getCommand();
@@ -54,8 +54,9 @@ public class JSqlsh {
                     }
                     try {
                         result = command.execute(context);
-                    } catch (CommandExecutionException e) {
+                    } catch (Throwable e) {
                         err = e.getMessage();
+                        throwable = e;
                     }
                     if (result != null) {
                         if (result.getResultType() == CommandResultType.TEXT) {
@@ -85,9 +86,12 @@ public class JSqlsh {
                     err = commandParseResult.getErrors();
                 }
 
-                if (err != null) {
+                if (err != null || throwable != null) {
                     out.print("\u001B[33m");// red
                     out.print(err);
+                    if (!(throwable instanceof CommandExecutionException)) {
+                        throwable.printStackTrace();
+                    }
                     out.println("\u001B[0m");
                 }
 

@@ -1,5 +1,7 @@
 package info.xonix.sqlsh;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +25,9 @@ public class TableResult implements ITableResult, ICommandResult {
         }
 
         public Builder row(String... row) {
+            for (int i = 0; i < row.length; i++) {
+                row[i] = StringUtils.defaultString(row[i]);
+            }
             data.add(Arrays.asList(row));
             return this;
         }
