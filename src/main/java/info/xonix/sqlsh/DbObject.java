@@ -47,8 +47,13 @@ public class DbObject implements IDbObject {
         if (pathParts.length == 0) {
             return this;
         } else {
-            return resolve0(pathParts[0]).resolve0(
-                    (String[]) ArrayUtils.subarray(pathParts, 1, pathParts.length));
+            DbObject dbObject = resolve0(pathParts[0]);
+            if (dbObject == null) {
+                return null;
+            } else {
+                return dbObject.resolve0(
+                        (String[]) ArrayUtils.subarray(pathParts, 1, pathParts.length));
+            }
         }
     }
 

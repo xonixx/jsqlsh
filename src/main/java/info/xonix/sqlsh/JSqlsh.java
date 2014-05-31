@@ -80,7 +80,8 @@ public class JSqlsh {
 
                             out.print(ASCIITable.getInstance().getTable(headers, data, IASCIITable.ALIGN_LEFT));
                         }
-                        out.print(result.getResultType() == CommandResultType.TABLE ? "\n" : "\n\n");
+                        out.print(result.getResultType() == CommandResultType.TABLE
+                                || "".equals(result.getTextResult()) ? "\n" : "\n\n");
                     }
                 } else {
                     err = commandParseResult.getErrors();
