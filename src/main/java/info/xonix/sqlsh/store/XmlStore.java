@@ -93,7 +93,11 @@ public class XmlStore implements IStore {
 
         NodeList childNodes = element.getChildNodes();
         for (int i = 0, l = childNodes.getLength(); i < l; i++) {
-            Element elt = (Element) childNodes.item(i);
+            Node item = childNodes.item(i);
+            if (!(item instanceof Element)) {
+                continue;
+            }
+            Element elt = (Element) item;
             if (elt.getTagName().equals(part)) {
                 return getEltByPath(elt, pathParts, partIdx + 1, create);
             }

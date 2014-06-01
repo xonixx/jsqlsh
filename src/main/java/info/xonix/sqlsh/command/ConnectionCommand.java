@@ -16,7 +16,7 @@ import org.apache.commons.beanutils.BeanMap;
         name = "con",
         description = "save/delete connections in store"
 )
-public class ConnectionOpreations implements ICommand {
+public class ConnectionCommand implements ICommand {
     public static final String BUCKET_CONNECTION = "connection";
     @CommandParam(
             name = "save",
@@ -54,11 +54,10 @@ public class ConnectionOpreations implements ICommand {
         IConsole console = context.getConsole();
         IDbObject currentObject = context.getSession().getCurrentObject();
 
-        if (currentObject == null) {
-            throw new CommandExecutionException("Not connected");
-        }
-
         save: if (save) {
+            if (currentObject == null) {
+                throw new CommandExecutionException("Not connected");
+            }
             if (store.exists(BUCKET_CONNECTION, name)) {
                 String reply = console.getString("Connection with this name already exists. Overwrite? [y/n]: ");
                 if ("n".equals(reply)) {
