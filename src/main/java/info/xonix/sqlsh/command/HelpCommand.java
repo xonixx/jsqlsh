@@ -63,7 +63,7 @@ public class HelpCommand implements ICommand {
                 for (IPrm<CommandParam> prm : prms) {
                     sb.append("\n\t\t")
                             .append(formParamLine(
-                                    '-' + StringUtils.defaultIfEmpty(prm.getParam().name(), prm.getFieldName()),
+                                    '-' + prm.getName(),
                                     prm.getParamType(),
                                     prm.getParam().description(),
                                     prm.getParam().optional()));
@@ -71,7 +71,7 @@ public class HelpCommand implements ICommand {
                 for (IPrm<CommandArgument> prm : arg) {
                     sb.append("\n\t\t")
                             .append(formParamLine(
-                            StringUtils.defaultIfEmpty(prm.getParam().name(), prm.getFieldName()),
+                            prm.getName(),
                             prm.getParamType(),
                             prm.getParam().description(),
                             prm.getParam().optional()));

@@ -5,6 +5,8 @@ import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandParam;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * User: xonix
@@ -55,18 +57,27 @@ public class OpenCommand implements ICommand {
 
         Session session = (Session) context.getSession();
         session.setConnection(connection);
-        session.setCurrentObject(DbObject.root(new MysqlMetadataAccessor(connection)));
+        MysqlMetadataAccessor metadataAccessor = new MysqlMetadataAccessor(connection);
 
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("select VERSION()");
-            if (resultSet.next()) {
-                return new TextResult(resultSet.getString(1));
-            } else {
-                throw new SQLException();
-            }
-        } catch (SQLException e) {
-            throw new CommandExecutionException("Can't fetch DB version", e);
-        }
+        session.setCurrentObject(DbObject.connection(metadataAccessor, this));
+
+        return new TextResult(metadataAccessor.getVersion());
+    }
+
+    // TODO: rewrite general purpose object <-> map
+    public Map<String,Object> asMap() {
+        HashMap<String, Object> res = new HashMap<>();
+        res.put("host", host);
+        res.put("port", port);
+        res.put("user", user);
+        res.put("pass", pass);
+        return res;
+    }
+
+    public void fromMap(Map<String,Object> map) {
+        host = (String) map.get("host");
+        port = (int) map.get("port");
+        user = (String) map.get("user");
+        port = (int) map.get("port");
     }
 }

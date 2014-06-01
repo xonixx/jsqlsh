@@ -8,6 +8,8 @@ import java.util.List;
  * Time: 6:20 PM
  */
 public interface MetadataAccessor {
+    String getVersion();
+
     boolean hasDb(String dbName);
 
     boolean hasTable(String dbName, String tableName);

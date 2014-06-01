@@ -32,22 +32,25 @@ public class Engine implements IEngine {
         }
     }
 
-    public static abstract class Args {
-        abstract List<KeyVal> getArgs();
+    static class Args {
+        List<KeyVal> keyVals;
+        String value;
 
-        abstract String getValue();
+        protected Args(List<KeyVal> keyVals, String value) {
+            this.keyVals = keyVals;
+            this.value = value;
+        }
 
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for (KeyVal keyVal : getArgs()) {
+            for (KeyVal keyVal : keyVals) {
                 sb.append('"')
                         .append(keyVal.key)
                         .append("\"=\"")
                         .append(StringUtils.defaultString(keyVal.val))
                         .append("\", ");
             }
-            String value = getValue();
             if (value != null) {
                 sb.append("\"value\"=\"")
                         .append(value)
@@ -94,10 +97,31 @@ public class Engine implements IEngine {
         List<IPrm<CommandParam>> prms = listPrms(cls, commandObj, CommandParam.class);
         Args cmdArgs = processArgs(args.subList(1, args.size()));
 
+        // fix for last boolean
+        if (cmdArgs.keyVals.size() > 0) {
+            KeyVal lastParam = cmdArgs.keyVals.get(cmdArgs.keyVals.size() - 1);
+            Class paramType = null;
+            for (IPrm<CommandParam> prm : prms) {
+                if (prm.getName().equals(lastParam.key)) {
+                    paramType = prm.getParamType();
+                    break;
+                }
+            }
+            if (paramType == Boolean.class || paramType == boolean.class) {
+                try {
+                    ConvertUtil.tryConvert(lastParam.val, paramType);
+                } catch (ConvertUtil.ConvertExc exc) {
+                    cmdArgs.value = cmdArgs.value != null ? lastParam.val + " " + cmdArgs.value : lastParam.val;
+                    lastParam.val = "";
+                }
+            }
+        }
+        // end fix for last boolean
+
         bind(prms, cmdArgs);
         List<IPrm<CommandArgument>> argSetter = listPrms(cls, commandObj, CommandArgument.class);
         for (IPrm<CommandArgument> as : argSetter) {
-            String value = cmdArgs.getValue();
+            String value = cmdArgs.value;
             if (as.isValid(value)) {
                 as.set(value);
             } else {
@@ -112,14 +136,14 @@ public class Engine implements IEngine {
         Map<String, String> params = new HashMap<>();
         Set<String> knownParams = new HashSet<>();
 
-        for (KeyVal keyVal : cmdArgs.getArgs()) {
+        for (KeyVal keyVal : cmdArgs.keyVals) {
             params.put(keyVal.key, keyVal.val);
         }
 
         List<String> errors = new LinkedList<>();
 
         for (IPrm<CommandParam> prm : prms) {
-            String pName = StringUtils.defaultIfEmpty(prm.getParam().name(), prm.getFieldName());
+            String pName = prm.getName();
             knownParams.add(pName);
 
             if (!prm.getParam().optional() && !params.containsKey(pName)) {
@@ -198,17 +222,7 @@ public class Engine implements IEngine {
             }
         }
         final String finalValue = value;
-        return new Args() {
-            @Override
-            public List<KeyVal> getArgs() {
-                return keyVals;
-            }
-
-            @Override
-            public String getValue() {
-                return finalValue;
-            }
-        };
+        return new Args(keyVals, finalValue);
     }
 
     public static <A extends Annotation> List<IPrm<A>> listPrms(Class cls, ICommand commandObj, Class<A> annCls) {

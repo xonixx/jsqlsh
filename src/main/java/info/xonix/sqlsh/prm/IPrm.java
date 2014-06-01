@@ -10,6 +10,8 @@ import java.lang.annotation.Annotation;
 public interface IPrm<A extends Annotation> {
     public A getParam();
 
+    String getName();
+
     String getFieldName();
 
     Class getParamType();

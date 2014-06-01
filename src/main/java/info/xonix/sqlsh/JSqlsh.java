@@ -38,7 +38,26 @@ public class JSqlsh {
             String line;
             Engine engine = new Engine();
             Session session = new Session();
-            Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), session);
+            Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), session,
+                    new IConsole() {
+                        @Override
+                        public String getString(String prompt) {
+                            console.setPrompt(prompt);
+                            String result = "";
+                            try {
+                                result = console.readLine();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            session.changePrompt(console);
+                            return result;
+                        }
+
+                        @Override
+                        public String getPassword(String prompt) {
+                            throw new UnsupportedOperationException("tbd");
+                        }
+                    });
             while ((line = console.readLine()) != null) {
                 ICommandParseResult commandParseResult = engine.parseCommand(line);
                 String err = null;
@@ -54,8 +73,7 @@ public class JSqlsh {
                     }
                     try {
                         result = command.execute(context);
-                        IDbObject currentObject = session.getCurrentObject();
-                        console.setPrompt((currentObject != null ? currentObject.pwd() : "") + "> ");
+                        session.changePrompt(console);
                     } catch (Throwable e) {
                         err = e.getMessage();
                         throwable = e;

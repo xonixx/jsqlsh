@@ -8,12 +8,14 @@ import info.xonix.sqlsh.store.IStore;
  * Time: 5:46 PM
  */
 public class Context implements IContext {
-    private IStore store;
-    private ISession session;
+    private final IStore store;
+    private final ISession session;
+    private final IConsole console;
 
-    public Context(IStore store, ISession session) {
+    public Context(IStore store, ISession session, IConsole console) {
         this.store = store;
         this.session = session;
+        this.console = console;
     }
 
     @Override
@@ -24,5 +26,10 @@ public class Context implements IContext {
     @Override
     public ISession getSession() {
         return session;
+    }
+
+    @Override
+    public IConsole getConsole() {
+        return console;
     }
 }

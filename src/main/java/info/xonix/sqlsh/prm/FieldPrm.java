@@ -1,5 +1,7 @@
 package info.xonix.sqlsh.prm;
 
+import info.xonix.sqlsh.ConvertUtil;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
@@ -38,7 +40,7 @@ public class FieldPrm<A extends Annotation> extends PrmAbstract<A> {
     public void set(String value) {
         try {
             field.setAccessible(true);
-            field.set(obj, tryConvert(value, getParamType()));
+            field.set(obj, ConvertUtil.tryConvert(value, getParamType()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

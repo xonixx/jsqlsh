@@ -21,6 +21,11 @@ public interface IDbObject {
     MetadataAccessor getMetadataAccessor();
 
     /**
+     * @return open command for this db object's connection
+     */
+    ICommand getOpenCommand();
+
+    /**
      * @return path of this db object
      */
     String pwd();

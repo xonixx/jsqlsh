@@ -14,6 +14,7 @@ public class MysqlMetadataAccessor implements MetadataAccessor {
     public static final String VIEW = "VIEW";
     private Connection connection;
 
+    private static final String VERSION_QRY = "select VERSION()";
     private final static String LIMIT_1 = " LIMIT 1";
 
     private final static String TBL_QRY =
@@ -29,6 +30,11 @@ public class MysqlMetadataAccessor implements MetadataAccessor {
 
     public MysqlMetadataAccessor(Connection connection) {
         this.connection = connection;
+    }
+
+    @Override
+    public String getVersion() {
+        return (String) Db.single(connection, VERSION_QRY);
     }
 
     @Override

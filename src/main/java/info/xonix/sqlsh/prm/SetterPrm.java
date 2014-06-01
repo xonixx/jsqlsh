@@ -1,5 +1,6 @@
 package info.xonix.sqlsh.prm;
 
+import info.xonix.sqlsh.ConvertUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -40,7 +41,7 @@ public class SetterPrm<A extends Annotation> extends PrmAbstract<A> {
     public void set(String value) {
         try {
             setterMethod.setAccessible(true);
-            setterMethod.invoke(obj, tryConvert(value,getParamType()));
+            setterMethod.invoke(obj, ConvertUtil.tryConvert(value, getParamType()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

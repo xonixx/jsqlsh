@@ -1,5 +1,6 @@
 package info.xonix.sqlsh;
 
+import info.xonix.sqlsh.command.OpenCommand;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -17,20 +18,22 @@ public class DbObject implements IDbObject {
     private final DbObjectType type;
     private final DbObject parent;
     private final MetadataAccessor metadataAccessor;
+    private final OpenCommand openCommand;
 
-    public static DbObject root(MetadataAccessor metadataAccessor) {
-        return new DbObject("", DbObjectType.ROOT, null, metadataAccessor);
+    public static DbObject connection(MetadataAccessor metadataAccessor, OpenCommand openCommand) {
+        return new DbObject("", DbObjectType.ROOT, null, metadataAccessor, openCommand);
     }
 
     public DbObject child(String name, DbObjectType type) {
-        return new DbObject(name, type, this, this.metadataAccessor);
+        return new DbObject(name, type, this, this.metadataAccessor, openCommand);
     }
 
-    public DbObject(String name, DbObjectType type, DbObject parent, MetadataAccessor metadataAccessor) {
+    public DbObject(String name, DbObjectType type, DbObject parent, MetadataAccessor metadataAccessor, OpenCommand openCommand) {
         this.name = name;
         this.type = type;
         this.parent = parent;
         this.metadataAccessor = metadataAccessor;
+        this.openCommand = openCommand;
     }
 
     @Override
@@ -91,6 +94,11 @@ public class DbObject implements IDbObject {
     @Override
     public MetadataAccessor getMetadataAccessor() {
         return metadataAccessor;
+    }
+
+    @Override
+    public ICommand getOpenCommand() {
+        return openCommand;
     }
 
     @Override

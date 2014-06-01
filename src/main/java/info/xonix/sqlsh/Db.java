@@ -68,4 +68,22 @@ public class Db {
 
         return result;
     }
+
+    public static Object single(Connection connection, String query, Object... params) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            for (int i = 1; i <= params.length; i++) {
+                Object param = params[i - 1];
+                statement.setObject(i, param);
+            }
+
+            ResultSet resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                return resultSet.getObject(1);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

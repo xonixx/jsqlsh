@@ -11,4 +11,6 @@ public interface IContext {
     IStore getStore();
 
     ISession getSession();
+
+    IConsole getConsole();
 }

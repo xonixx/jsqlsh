@@ -1,5 +1,7 @@
 package info.xonix.sqlsh;
 
+import jline.console.ConsoleReader;
+
 import java.sql.Connection;
 
 /**
@@ -27,5 +29,13 @@ public class Session implements ISession {
 
     public void setCurrentObject(IDbObject currentObject) {
         this.currentObject = currentObject;
+    }
+
+    /**
+     * changes a prompt according to current db object
+     * @param console console
+     */
+    public void changePrompt(ConsoleReader console) {
+        console.setPrompt((currentObject != null ? currentObject.pwd() : "") + "> ");
     }
 }
