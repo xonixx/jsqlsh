@@ -7,6 +7,7 @@ package info.xonix.sqlsh;
  */
 public enum DbObjectType {
     ROOT,
+    CONNECTION,
     DATABASE,
     TABLE,
     VIEW

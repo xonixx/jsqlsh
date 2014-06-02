@@ -17,11 +17,6 @@ public class PwdCommand implements ICommand {
     public ICommandResult execute(IContext context) throws CommandExecutionException {
         ISession session = context.getSession();
         IDbObject currentObject = session.getCurrentObject();
-        if (currentObject == null) {
-            throw new CommandExecutionException("Not connected");
-        } else {
-            String result = currentObject.pwd();
-            return new TextResult(result);
-        }
+        return new TextResult(currentObject.pwd());
     }
 }

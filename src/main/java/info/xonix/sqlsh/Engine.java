@@ -6,6 +6,7 @@ import info.xonix.sqlsh.annotations.CommandParam;
 import info.xonix.sqlsh.prm.FieldPrm;
 import info.xonix.sqlsh.prm.IPrm;
 import info.xonix.sqlsh.prm.SetterPrm;
+import info.xonix.sqlsh.store.IStore;
 import org.apache.commons.lang.StringUtils;
 import org.reflections.ReflectionUtils;
 
@@ -21,6 +22,24 @@ import java.util.*;
  * Time: 10:19 PM
  */
 public class Engine implements IEngine {
+    private static IStore jsqlshStore;
+    private static Context context;
+
+    public static void setJsqlshStore(IStore jsqlshStore) {
+        Engine.jsqlshStore = jsqlshStore;
+    }
+
+    public static IStore getJsqlshStore() {
+        return jsqlshStore;
+    }
+
+    public static void setContext(Context context) {
+        Engine.context = context;
+    }
+
+    public static Context getContext() {
+        return context;
+    }
 
     private static class KeyVal {
         final String key;

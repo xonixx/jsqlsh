@@ -46,6 +46,17 @@ public class OpenCommand implements ICommand {
 
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
+        Connection connection = openConnection();
+        Session session = (Session) context.getSession();
+        session.setConnection(connection);
+        MysqlMetadataAccessor metadataAccessor = new MysqlMetadataAccessor(connection);
+
+        session.setCurrentObject(DbObject.connection(metadataAccessor, this));
+
+        return new TextResult(metadataAccessor.getVersion());
+    }
+
+    public Connection openConnection() throws CommandExecutionException {
         Connection connection;
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -54,14 +65,7 @@ public class OpenCommand implements ICommand {
         } catch (ClassNotFoundException | SQLException e) {
             throw new CommandExecutionException("Can't connect to DB", e);
         }
-
-        Session session = (Session) context.getSession();
-        session.setConnection(connection);
-        MysqlMetadataAccessor metadataAccessor = new MysqlMetadataAccessor(connection);
-
-        session.setCurrentObject(DbObject.connection(metadataAccessor, this));
-
-        return new TextResult(metadataAccessor.getVersion());
+        return connection;
     }
 
     // TODO: rewrite general purpose object <-> map
@@ -74,10 +78,11 @@ public class OpenCommand implements ICommand {
         return res;
     }
 
-    public void fromMap(Map<String,Object> map) {
+    public OpenCommand fromMap(Map map) {
         host = (String) map.get("host");
         port = (int) map.get("port");
         user = (String) map.get("user");
         port = (int) map.get("port");
+        return this;
     }
 }

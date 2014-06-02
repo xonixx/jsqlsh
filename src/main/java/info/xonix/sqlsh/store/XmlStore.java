@@ -270,7 +270,11 @@ public class XmlStore implements IStore {
         List<StoreElement> res = new ArrayList<>();
         NodeList childNodes = elt.getChildNodes();
         for (int i = 0, l = childNodes.getLength(); i < l; i++) {
-            Element item = (Element) childNodes.item(i);
+            Node node = childNodes.item(i);
+            if (!(node instanceof Element)) {
+                continue;
+            }
+            Element item = (Element) node;
             res.add(new StoreElement(
                     item.getTagName(),
                     eltToValue((Element) item.getFirstChild())));

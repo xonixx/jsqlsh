@@ -1,12 +1,16 @@
 package info.xonix.sqlsh;
 
+import info.xonix.sqlsh.command.ConnectionCommand;
 import info.xonix.sqlsh.command.OpenCommand;
+import info.xonix.sqlsh.store.IStore;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: xonix
@@ -20,8 +24,10 @@ public class DbObject implements IDbObject {
     private final MetadataAccessor metadataAccessor;
     private final OpenCommand openCommand;
 
+    public static final DbObject ROOT = new DbObject("", DbObjectType.ROOT, null, null, null);
+
     public static DbObject connection(MetadataAccessor metadataAccessor, OpenCommand openCommand) {
-        return new DbObject("", DbObjectType.ROOT, null, metadataAccessor, openCommand);
+        return new DbObject("", DbObjectType.CONNECTION, ROOT, metadataAccessor, openCommand);
     }
 
     public DbObject child(String name, DbObjectType type) {
@@ -73,6 +79,21 @@ public class DbObject implements IDbObject {
         }
 
         if (type == DbObjectType.ROOT) {
+            IStore store = Engine.getJsqlshStore();
+            if (store.exists(ConnectionCommand.BUCKET_CONNECTION, part)) {
+                Object o = store.get(ConnectionCommand.BUCKET_CONNECTION, part);
+                OpenCommand openCmd = new OpenCommand().fromMap((Map) o);
+                try {
+                    Connection connection = openCmd.openConnection();
+                    return connection(new MysqlMetadataAccessor(connection), openCmd);
+                } catch (CommandExecutionException e) {
+                    System.out.println("Can't connect to db: " + e.getMessage());
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else if (type == DbObjectType.CONNECTION) {
             if (metadataAccessor.hasDb(part)) {
                 return child(part, DbObjectType.DATABASE);
             }
@@ -107,11 +128,13 @@ public class DbObject implements IDbObject {
         DbObject currentObject = this;
         do {
             DbObjectType type = currentObject.getType();
-            parts.add(type == DbObjectType.ROOT ? currentObject.getName()
-                    : (
-                    type == DbObjectType.DATABASE ? "" :
-                            type == DbObjectType.TABLE ? "" :
-                                    type == DbObjectType.VIEW ? "v:" : "???") + currentObject.getName());
+            parts.add(
+                    type == DbObjectType.ROOT ? ""
+                            : type == DbObjectType.CONNECTION ? currentObject.getName()
+                            : (
+                            type == DbObjectType.DATABASE ? "" :
+                                    type == DbObjectType.TABLE ? "" :
+                                            type == DbObjectType.VIEW ? "v:" : "???") + currentObject.getName());
             currentObject = currentObject.getParent();
         } while (currentObject != null);
         Collections.reverse(parts);

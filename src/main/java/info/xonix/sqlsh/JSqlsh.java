@@ -3,6 +3,7 @@ package info.xonix.sqlsh;
 import com.bethecoder.ascii_table.ASCIITable;
 import com.bethecoder.ascii_table.spec.IASCIITable;
 import info.xonix.sqlsh.command.ExitCommand;
+import info.xonix.sqlsh.store.IStore;
 import info.xonix.sqlsh.store.XmlStore;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
@@ -38,7 +39,10 @@ public class JSqlsh {
             String line;
             Engine engine = new Engine();
             Session session = new Session();
-            Context context = new Context(new XmlStore(new File(settingsFolder, ".jsqlsh.xml")), session,
+            session.setCurrentObject(DbObject.ROOT);
+            IStore store = new XmlStore(new File(settingsFolder, ".jsqlsh.xml"));
+            Engine.setJsqlshStore(store);
+            Context context = new Context(store, session,
                     new IConsole() {
                         @Override
                         public String getString(String prompt) {
@@ -58,6 +62,7 @@ public class JSqlsh {
                             throw new UnsupportedOperationException("tbd");
                         }
                     });
+            Engine.setContext(context);
             while ((line = console.readLine()) != null) {
                 ICommandParseResult commandParseResult = engine.parseCommand(line);
                 String err = null;

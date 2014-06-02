@@ -18,6 +18,7 @@ import org.apache.commons.beanutils.BeanMap;
 )
 public class ConnectionCommand implements ICommand {
     public static final String BUCKET_CONNECTION = "connection";
+
     @CommandParam(
             name = "save",
             description = "save current connection in store"
@@ -55,7 +56,7 @@ public class ConnectionCommand implements ICommand {
         IDbObject currentObject = context.getSession().getCurrentObject();
 
         save: if (save) {
-            if (currentObject == null) {
+            if (currentObject == DbObject.ROOT) {
                 throw new CommandExecutionException("Not connected");
             }
             if (store.exists(BUCKET_CONNECTION, name)) {
@@ -66,6 +67,7 @@ public class ConnectionCommand implements ICommand {
             }
 
             store.put(BUCKET_CONNECTION, name, ((OpenCommand) currentObject.getOpenCommand()).asMap());
+            // todo: update name in current connection to show in prompt
         } else if (delete) {
             if (store.exists(BUCKET_CONNECTION, name)) {
                 store.delete(BUCKET_CONNECTION, name);

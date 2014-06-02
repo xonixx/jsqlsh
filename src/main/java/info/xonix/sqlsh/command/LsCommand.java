@@ -3,9 +3,11 @@ package info.xonix.sqlsh.command;
 import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandArgument;
+import info.xonix.sqlsh.store.IStore;
+import info.xonix.sqlsh.store.StoreElement;
 
-import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: xonix
@@ -25,13 +27,24 @@ public class LsCommand implements ICommand {
     @Override
     public ICommandResult execute(IContext context) throws CommandExecutionException {
         ISession session = context.getSession();
+        IStore store = context.getStore();
         IDbObject currentObject = session.getCurrentObject();
 
-        if (currentObject == null) {
-            throw new CommandExecutionException("Not connected");
-        }
-
         IDbObject targetDbObject = currentObject.resolve(path);
+
+        if (targetDbObject == DbObject.ROOT) {
+            // list connections from store
+            List<StoreElement> connections = store.list(ConnectionCommand.BUCKET_CONNECTION);
+
+            TableResult.Builder builder = new TableResult.Builder().columns("connection", "user@host");
+
+            for (StoreElement connection : connections) {
+                OpenCommand openCommand = new OpenCommand().fromMap((Map) connection.value);
+                builder.row(connection.key, openCommand.user + "@" + openCommand.host);
+            }
+
+            return builder.build();
+        }
 
         return list(targetDbObject);
     }
@@ -39,7 +52,7 @@ public class LsCommand implements ICommand {
     private ICommandResult list(IDbObject target) throws CommandExecutionException {
         if (target == null) {
             throw new CommandExecutionException("Not found.");
-        } else if (target.getType() == DbObjectType.ROOT) {
+        } else if (target.getType() == DbObjectType.CONNECTION) {
             return listDatabases(target.getMetadataAccessor());
         } else if (target.getType() == DbObjectType.DATABASE) {
             return listDbTables(target.getMetadataAccessor(), target.getName());
