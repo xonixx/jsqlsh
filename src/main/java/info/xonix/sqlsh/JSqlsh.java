@@ -35,13 +35,13 @@ public class JSqlsh {
             console.setHistory(jlineHistory);
             PrintWriter out = new PrintWriter(console.getOutput());
             console.print("This is JSQLSH, print help (or help cmd) for information\n\n");
-            console.setPrompt("> ");
             String line;
             Engine engine = new Engine();
             Session session = new Session();
             session.setCurrentObject(DbObject.ROOT);
             IStore store = new XmlStore(new File(settingsFolder, ".jsqlsh.xml"));
             Engine.setJsqlshStore(store);
+            session.changePrompt(console);
             Context context = new Context(store, session,
                     new IConsole() {
                         @Override

@@ -1,5 +1,6 @@
 package info.xonix.sqlsh.store;
 
+import info.xonix.sqlsh.xml.XPathUtil;
 import info.xonix.sqlsh.xml.XmlUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -7,6 +8,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.xpath.XPathExpression;
 import java.io.*;
 import java.util.*;
 
@@ -40,7 +42,16 @@ public class XmlStore implements IStore {
             Element rootElt = document.createElement("store");
             document.appendChild(rootElt);
         }
-//        document.setXmlStandalone(true);
+
+        // strip whitespaces
+        XPathExpression xpathExp = XPathUtil.compile("//text()[normalize-space(.) = '']");
+        NodeList emptyTextNodes = XPathUtil.nodeset(document, xpathExp);
+
+        // Remove each empty text node from document.
+        for (int i = 0; i < emptyTextNodes.getLength(); i++) {
+            Node emptyTextNode = emptyTextNodes.item(i);
+            emptyTextNode.getParentNode().removeChild(emptyTextNode);
+        }
     }
 
     private static String fixSlashes(String path, boolean atStart, boolean atEnd) {
@@ -94,9 +105,9 @@ public class XmlStore implements IStore {
         NodeList childNodes = element.getChildNodes();
         for (int i = 0, l = childNodes.getLength(); i < l; i++) {
             Node item = childNodes.item(i);
-            if (!(item instanceof Element)) {
+            /*if (!(item instanceof Element)) {
                 continue;
-            }
+            }*/
             Element elt = (Element) item;
             if (elt.getTagName().equals(part)) {
                 return getEltByPath(elt, pathParts, partIdx + 1, create);
@@ -230,7 +241,7 @@ public class XmlStore implements IStore {
 
     @Override
     public void flush() {
-        try(OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
+        try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
             XmlUtil.pprint(document, out);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -271,9 +282,9 @@ public class XmlStore implements IStore {
         NodeList childNodes = elt.getChildNodes();
         for (int i = 0, l = childNodes.getLength(); i < l; i++) {
             Node node = childNodes.item(i);
-            if (!(node instanceof Element)) {
+            /*if (!(node instanceof Element)) {
                 continue;
-            }
+            }*/
             Element item = (Element) node;
             res.add(new StoreElement(
                     item.getTagName(),

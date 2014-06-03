@@ -26,8 +26,8 @@ public class DbObject implements IDbObject {
 
     public static final DbObject ROOT = new DbObject("", DbObjectType.ROOT, null, null, null);
 
-    public static DbObject connection(MetadataAccessor metadataAccessor, OpenCommand openCommand) {
-        return new DbObject("", DbObjectType.CONNECTION, ROOT, metadataAccessor, openCommand);
+    public static DbObject connection(String name, MetadataAccessor metadataAccessor, OpenCommand openCommand) {
+        return new DbObject(name, DbObjectType.CONNECTION, ROOT, metadataAccessor, openCommand);
     }
 
     public DbObject child(String name, DbObjectType type) {
@@ -85,7 +85,7 @@ public class DbObject implements IDbObject {
                 OpenCommand openCmd = new OpenCommand().fromMap((Map) o);
                 try {
                     Connection connection = openCmd.openConnection();
-                    return connection(new MysqlMetadataAccessor(connection), openCmd);
+                    return connection(part, new MysqlMetadataAccessor(connection), openCmd);
                 } catch (CommandExecutionException e) {
                     System.out.println("Can't connect to db: " + e.getMessage());
                     return null;
@@ -138,6 +138,10 @@ public class DbObject implements IDbObject {
             currentObject = currentObject.getParent();
         } while (currentObject != null);
         Collections.reverse(parts);
-        return StringUtils.join(parts, "/");
+        String path = StringUtils.join(parts, "/");
+        if ("".equals(path)) {
+            path = "/";
+        }
+        return path;
     }
 }

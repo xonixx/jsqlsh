@@ -51,7 +51,7 @@ public class OpenCommand implements ICommand {
         session.setConnection(connection);
         MysqlMetadataAccessor metadataAccessor = new MysqlMetadataAccessor(connection);
 
-        session.setCurrentObject(DbObject.connection(metadataAccessor, this));
+        session.setCurrentObject(DbObject.connection(user + "@" + host, metadataAccessor, this));
 
         return new TextResult(metadataAccessor.getVersion());
     }
@@ -82,7 +82,7 @@ public class OpenCommand implements ICommand {
         host = (String) map.get("host");
         port = (int) map.get("port");
         user = (String) map.get("user");
-        port = (int) map.get("port");
+        pass = (String) map.get("pass");
         return this;
     }
 }
