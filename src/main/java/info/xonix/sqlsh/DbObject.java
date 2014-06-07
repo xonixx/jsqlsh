@@ -87,6 +87,7 @@ public class DbObject implements IDbObject {
                 OpenCommand openCmd = new OpenCommand().fromMap((Map) o);
                 try {
                     Connection connection = openCmd.openConnection();
+                    ((Session) Engine.getContext().getSession()).setConnection(connection);
                     return connection(part, new MysqlMetadataAccessor(connection), openCmd);
                 } catch (CommandExecutionException e) {
                     System.out.println("Can't connect to db: " + e.getMessage());

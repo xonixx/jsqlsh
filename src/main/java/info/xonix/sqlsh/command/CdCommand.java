@@ -39,6 +39,9 @@ public class CdCommand implements ICommand {
             throw new CommandExecutionException("not found: " + path);
         } else {
             ((Session) session).setCurrentObject(targetDbObject);
+            if (targetDbObject.getType() == DbObjectType.DATABASE) {
+                Db.executeUpdate(session.getConnection(), "use " + targetDbObject.getName());
+            }
         }
         return new TextResult("");
     }

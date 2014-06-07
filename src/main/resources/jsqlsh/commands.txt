@@ -1,3 +1,3 @@
 # list of packages
 info.xonix.sqlsh.command
-info.xonix.sqlsh.test_commands
+#info.xonix.sqlsh.test_commands

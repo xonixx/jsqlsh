@@ -64,7 +64,11 @@ public class TableResult implements ITableResult, ICommandResult {
                 i++;
                 ArrayList<String> row = new ArrayList<>();
                 for (int j = 1; j <= columnCount; j++) {
-                    row.add(resultSet.getString(j));
+                    String val = StringUtils.defaultString(resultSet.getString(j), "<NULL>");
+                    if (val.length() > 25) {
+                        val = val.substring(0, 24) + "...";
+                    }
+                    row.add(val);
                 }
                 res.add(row);
             }

@@ -11,12 +11,7 @@ import java.util.List;
  */
 public class Db {
     public static boolean exists(Connection connection, String query, Object... params) {
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-
-            for (int i = 1; i <= params.length; i++) {
-                Object param = params[i - 1];
-                statement.setObject(i, param);
-            }
+        try (PreparedStatement statement = newPreparedStatement(connection, query, params)) {
             ResultSet resultSet = statement.executeQuery();
             return resultSet.first();
 
@@ -41,13 +36,7 @@ public class Db {
     public static List<List<Object>> list(Connection connection, String query, Object... params) {
         List<List<Object>> result = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-
-            for (int i = 1; i <= params.length; i++) {
-                Object param = params[i - 1];
-                statement.setObject(i, param);
-            }
-
+        try (PreparedStatement statement = newPreparedStatement(connection, query, params)) {
             ResultSet resultSet = statement.executeQuery();
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -70,12 +59,7 @@ public class Db {
     }
 
     public static Object single(Connection connection, String query, Object... params) {
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            for (int i = 1; i <= params.length; i++) {
-                Object param = params[i - 1];
-                statement.setObject(i, param);
-            }
-
+        try (PreparedStatement statement = newPreparedStatement(connection, query, params)) {
             ResultSet resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
                 return resultSet.getObject(1);
@@ -85,5 +69,22 @@ public class Db {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static int executeUpdate(Connection connection, String query, Object... params) {
+        try (PreparedStatement statement = newPreparedStatement(connection, query, params)) {
+            return statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static PreparedStatement newPreparedStatement(Connection connection, String query, Object... params) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(query);
+        for (int i = 1; i <= params.length; i++) {
+            Object param = params[i - 1];
+            statement.setObject(i, param);
+        }
+        return statement;
     }
 }
