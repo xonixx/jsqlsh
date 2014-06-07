@@ -38,6 +38,7 @@ public class JSqlsh {
             String line;
             Engine engine = new Engine();
             Session session = new Session();
+            console.addCompleter(new DbObjectsCompleter(session));
             session.setCurrentObject(DbObject.ROOT);
             IStore store = new XmlStore(new File(settingsFolder, ".jsqlsh.xml"));
             Engine.setJsqlshStore(store);

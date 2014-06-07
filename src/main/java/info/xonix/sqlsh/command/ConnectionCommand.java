@@ -66,7 +66,7 @@ public class ConnectionCommand implements ICommand {
                 }
             }
 
-            store.put(BUCKET_CONNECTION, name, ((OpenCommand) currentObject.getOpenCommand()).asMap());
+            store.put(BUCKET_CONNECTION, name, currentObject.getOpenCommand().asMap());
             // todo: update name in current connection to show in prompt
         } else if (delete) {
             if (store.exists(BUCKET_CONNECTION, name)) {

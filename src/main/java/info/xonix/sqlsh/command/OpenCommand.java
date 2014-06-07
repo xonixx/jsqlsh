@@ -3,6 +3,7 @@ package info.xonix.sqlsh.command;
 import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandParam;
+import info.xonix.sqlsh.db.MysqlMetadataAccessor;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -84,5 +85,9 @@ public class OpenCommand implements ICommand {
         user = (String) map.get("user");
         pass = (String) map.get("pass");
         return this;
+    }
+
+    public String getDescriptor() {
+        return user + "@" + host + ":" + port;
     }
 }

@@ -2,6 +2,8 @@ package info.xonix.sqlsh;
 
 import info.xonix.sqlsh.command.ConnectionCommand;
 import info.xonix.sqlsh.command.OpenCommand;
+import info.xonix.sqlsh.db.MetadataAccessor;
+import info.xonix.sqlsh.db.MysqlMetadataAccessor;
 import info.xonix.sqlsh.store.IStore;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -113,12 +115,26 @@ public class DbObject implements IDbObject {
     }
 
     @Override
+    public IDbObject getParent(DbObjectType type) {
+        IDbObject current = this;
+
+        do {
+            if (current.getType() == type) {
+                return current;
+            }
+            current = current.getParent();
+        } while (current != null);
+
+        return null;
+    }
+
+    @Override
     public MetadataAccessor getMetadataAccessor() {
         return metadataAccessor;
     }
 
     @Override
-    public ICommand getOpenCommand() {
+    public OpenCommand getOpenCommand() {
         return openCommand;
     }
 

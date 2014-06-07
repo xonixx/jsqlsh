@@ -1,4 +1,4 @@
-package info.xonix.sqlsh;
+package info.xonix.sqlsh.db;
 
 import java.util.List;
 

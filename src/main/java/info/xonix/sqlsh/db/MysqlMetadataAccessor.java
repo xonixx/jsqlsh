@@ -1,4 +1,6 @@
-package info.xonix.sqlsh;
+package info.xonix.sqlsh.db;
+
+import info.xonix.sqlsh.Db;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -8,6 +10,8 @@ import java.util.List;
  * User: xonix
  * Date: 5/25/14
  * Time: 6:20 PM
+ *
+ * TODO: rewrite using DatabaseMetaData
  */
 public class MysqlMetadataAccessor implements MetadataAccessor {
     public static final String TABLE = "BASE TABLE";

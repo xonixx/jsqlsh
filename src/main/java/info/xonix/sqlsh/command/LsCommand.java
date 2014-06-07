@@ -3,6 +3,8 @@ package info.xonix.sqlsh.command;
 import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandArgument;
+import info.xonix.sqlsh.db.ColumnDescriptor;
+import info.xonix.sqlsh.db.MetadataAccessor;
 import info.xonix.sqlsh.store.IStore;
 import info.xonix.sqlsh.store.StoreElement;
 
