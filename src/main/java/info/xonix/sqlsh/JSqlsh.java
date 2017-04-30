@@ -1,7 +1,7 @@
 package info.xonix.sqlsh;
 
-import com.bethecoder.ascii_table.ASCIITable;
-import com.bethecoder.ascii_table.spec.IASCIITable;
+import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_LongestLine;
 import info.xonix.sqlsh.command.ExitCommand;
 import info.xonix.sqlsh.store.IStore;
 import info.xonix.sqlsh.store.XmlStore;
@@ -91,21 +91,24 @@ public class JSqlsh {
                             ITableResult tableResult = result.getTableResult();
 
                             if (tableResult.getData().size() > 0) {
+                                AsciiTable asciiTable = new AsciiTable();
+                                asciiTable.getRenderer().setCWC(new CWC_LongestLine());
+
                                 List<String> columnNames = tableResult.getColumnNames();
-                                String[] headers = columnNames.toArray(new String[columnNames.size()]);
+
+                                asciiTable.addRule();
+                                asciiTable.addRow(columnNames);
+                                asciiTable.addRule();
 
                                 List<List<String>> tableData = tableResult.getData();
-                                String[][] data = new String[tableData.size()][columnNames.size()];
 
                                 for (int i = 0; i < tableData.size(); i++) {
                                     List<String> rows = tableData.get(i);
-                                    for (int j = 0; j < rows.size(); j++) {
-                                        String cell = rows.get(j);
-                                        data[i][j] = cell;
-                                    }
-                                }
 
-                                out.print(ASCIITable.getInstance().getTable(headers, data, IASCIITable.ALIGN_LEFT));
+                                    asciiTable.addRow(rows);
+                                }
+                                asciiTable.addRule();
+                                out.print(asciiTable.render());
                             }
                         }
                         out.print(result.getResultType() == CommandResultType.TABLE
