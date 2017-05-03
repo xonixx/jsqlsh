@@ -1,9 +1,6 @@
 package info.xonix.sqlsh.db;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,15 +102,33 @@ public class MysqlMetadataAccessorImproved implements MetadataAccessor {
 
         try {
             ResultSet columns = databaseMetaData.getColumns(dbName, null, tblName, null);
+
+//            ResultSetMetaData metaData = columns.getMetaData();
             while (columns.next()) {
+//                StringBuilder sb = new StringBuilder();
+//                for (int i = 0; i < metaData.getColumnCount(); i++) {
+//                    sb.append(columns.getObject(i + 1)).append(", ");
+//                }
+//                sb.setLength(sb.length() - 2);
+//                System.out.println("COL: " + sb);
+
+                String typeName = columns.getString("TYPE_NAME");
+                int columnSize = columns.getInt("COLUMN_SIZE");
+                String typeNameLc = typeName.toLowerCase();
+                boolean typeInt = typeNameLc.endsWith("int");
+                if (typeInt)
+                    columnSize += 1; // hmmm
+                if (typeNameLc.endsWith("char") || typeInt)
+                    typeName += "(" + columnSize + ")";
                 res.add(new ColumnDescriptor(
                         columns.getString("COLUMN_NAME"),
+                        typeName,
+                        columns.getString("IS_NULLABLE"),
+                        "",
                         columns.getString("COLUMN_DEF"),
-                        columns.getInt("NULLABLE") == 1 ? "NULL" : "",
-                        "TBD",
-                        "TBD",
-                        columns.getString("REMARKS")
+                        "YES".equals(columns.getString("IS_AUTOINCREMENT")) ? "auto_increment" : ""
                 ));
+
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
