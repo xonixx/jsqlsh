@@ -1,5 +1,8 @@
 package info.xonix.sqlsh;
 
+import info.xonix.sqlsh.db.MetadataAccessor;
+import info.xonix.sqlsh.db.MysqlMetadataAccessor;
+import info.xonix.sqlsh.db.MysqlMetadataAccessorImproved;
 import jline.console.ConsoleReader;
 
 import java.sql.Connection;
@@ -16,6 +19,12 @@ public class Session implements ISession {
     @Override
     public Connection getConnection() {
         return connection;
+    }
+
+    @Override
+    public MetadataAccessor getMetadataAccessor() {
+//        return new MysqlMetadataAccessor(getConnection());
+        return new MysqlMetadataAccessorImproved(getConnection());
     }
 
     public void setConnection(Connection connection) {

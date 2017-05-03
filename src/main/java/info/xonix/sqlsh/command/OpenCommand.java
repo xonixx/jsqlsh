@@ -3,9 +3,11 @@ package info.xonix.sqlsh.command;
 import info.xonix.sqlsh.*;
 import info.xonix.sqlsh.annotations.Command;
 import info.xonix.sqlsh.annotations.CommandParam;
-import info.xonix.sqlsh.db.MysqlMetadataAccessor;
+import info.xonix.sqlsh.db.MetadataAccessor;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +52,7 @@ public class OpenCommand implements ICommand {
         Connection connection = openConnection();
         Session session = (Session) context.getSession();
         session.setConnection(connection);
-        MysqlMetadataAccessor metadataAccessor = new MysqlMetadataAccessor(connection);
+        MetadataAccessor metadataAccessor = session.getMetadataAccessor();
 
         session.setCurrentObject(DbObject.connection(user + "@" + host, metadataAccessor, this));
 
@@ -70,7 +72,7 @@ public class OpenCommand implements ICommand {
     }
 
     // TODO: rewrite general purpose object <-> map
-    public Map<String,Object> asMap() {
+    public Map<String, Object> asMap() {
         HashMap<String, Object> res = new HashMap<>();
         res.put("host", host);
         res.put("port", port);

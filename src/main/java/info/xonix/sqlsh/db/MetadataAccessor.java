@@ -20,7 +20,7 @@ public interface MetadataAccessor {
 
     List<String> listTables(String dbName);
 
-    List<String> listViewes(String dbName);
+    List<String> listViews(String dbName);
 
     List<ColumnDescriptor> listColumns(String dbName, String tblName);
 }

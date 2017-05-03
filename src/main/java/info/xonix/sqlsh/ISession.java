@@ -1,5 +1,7 @@
 package info.xonix.sqlsh;
 
+import info.xonix.sqlsh.db.MetadataAccessor;
+
 import java.sql.Connection;
 
 /**
@@ -9,6 +11,8 @@ import java.sql.Connection;
  */
 public interface ISession {
     Connection getConnection();
+
+    MetadataAccessor getMetadataAccessor();
 
     IDbObject getCurrentObject();
 }

@@ -89,7 +89,7 @@ public class LsCommand implements ICommand {
 
     private ICommandResult listDbTables(MetadataAccessor metadataAccessor, String dbName) {
         List<String> tables = metadataAccessor.listTables(dbName);
-        List<String> views = metadataAccessor.listViewes(dbName);
+        List<String> views = metadataAccessor.listViews(dbName);
 
         TableResult.Builder builder = new TableResult.Builder().columns("name", "type");
 

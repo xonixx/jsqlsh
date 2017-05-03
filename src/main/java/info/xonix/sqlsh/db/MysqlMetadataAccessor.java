@@ -67,7 +67,7 @@ public class MysqlMetadataAccessor implements MetadataAccessor {
     }
 
     @Override
-    public List<String> listViewes(String dbName) {
+    public List<String> listViews(String dbName) {
         return Db.listStrings(connection, TBL_QRY, dbName, VIEW);
     }
 
